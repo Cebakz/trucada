@@ -1374,7 +1374,15 @@
   .ea-txt b { font-family: var(--disp); letter-spacing: .03em; }
   .ea-txt span { display: block; font-size: 11px; color: var(--cream-dim); }
   .end-coins { font-size: 18px; font-weight: 800; color: var(--gold-soft); }
-  #endView .btns { width: 100%; display: flex; flex-direction: column; gap: 9px; margin-top: 4px; }
+  #endView .btns {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 9px;
+    margin-top: 4px;
+  }
+  #endView .btns button { width: 100%; max-width: 300px; }
 
   /* moedas voando para o contador */
   .fly-coin {
