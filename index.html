@@ -1416,7 +1416,7 @@
     <div class="topbar">
       <div class="lvl"><span id="mLevel">1</span><div class="lvl-bar"><div id="mXp" style="width:0%"></div></div></div>
       <div class="cur">🪙 <b id="mCoins">0</b></div>
-      <div class="cur">💎 <b id="mGems">3</b></div>
+      <div class="cur" id="gemChip" style="opacity:.6; cursor:pointer">💎 <b>em breve</b></div>
     </div>
     <div class="tab-screen" id="screenBattle">
       <div class="banner" id="btnChars">
@@ -1441,7 +1441,7 @@
         <button class="blue big" id="btnPlay2">2v2<small>em dupla</small></button>
       </div>
       <div class="menu-missions" id="passCard" role="button" tabindex="0" style="cursor:pointer"></div>
-      <button class="ghost friends-btn" id="btnFriends">👥 Criar partida com amigos</button>
+      <button class="ghost friends-btn" id="btnFriends">👥 Mesa personalizada · 🌐 online em breve</button>
     </div>
 
     <div class="tab-screen" id="screenPass" hidden>
@@ -1453,11 +1453,12 @@
 
     <div class="tab-screen" id="screenFriends" hidden>
       <button class="ghost back-fab" id="btnFriendsBack">‹ Voltar</button>
-      <div class="screen-title">👥 Sala com amigos</div>
-      <div class="menu-missions">
-        <h3>Sala <span id="roomCode">TRC-0000</span></h3>
-        <button class="gold sm" id="btnCopyInvite">📋 Copiar convite</button>
-        <p class="fr-note">No protótipo os amigos entram como bots — a sala online de verdade chega na versão publicada.</p>
+      <div class="screen-title">👥 Mesa personalizada</div>
+      <p class="screen-sub">Monte a mesa com as suas regras e jogue contra bots.</p>
+      <div class="menu-missions" style="opacity:.7">
+        <h3>🌐 Sala online <span class="m-done">em breve</span></h3>
+        <p class="fr-note">Convidar amigos de verdade por código chega na versão final — por enquanto, os assentos são preenchidos por bots.</p>
+        <button class="ghost sm" disabled>📋 Copiar convite — em breve</button>
       </div>
       <div class="menu-missions">
         <h3>Regras da sala</h3>
@@ -3071,7 +3072,6 @@ function renderMenu() {
   $('mLevel').textContent = playerLevel();
   $('mXp').style.width = Math.round(100 * ((store.wins + store.losses) % 8) / 8) + '%';
   $('mCoins').textContent = store.coins;
-  $('mGems').textContent = store.gems;
   // conteúdo da aba atual
   if (currentTab === 'battle') renderBattleScreen();
   else if (currentTab === 'shop') renderShopScreen();
@@ -3160,12 +3160,6 @@ function renderPassScreen() {
 }
 
 function renderFriendsScreen() {
-  if (!roomCfg.code) {
-    const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
-    roomCfg.code = 'TRC-' +
-      Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-  }
-  $('roomCode').textContent = roomCfg.code;
   $('frMode1').className = 'sm ' + (roomCfg.mode === 1 ? 'gold' : 'ghost');
   $('frMode2').className = 'sm ' + (roomCfg.mode === 2 ? 'gold' : 'ghost');
   $('frFerro').className = 'sm ' + (roomCfg.ferro ? 'gold' : 'ghost');
@@ -3183,7 +3177,7 @@ function renderFriendsScreen() {
   const slots = roomCfg.mode === 1 ? ['Rival'] : ['Parceiro', 'Rival', 'Rival'];
   $('frSeats').innerHTML =
     `<div class="fr-seat me"><b>Você</b><br>${me.name}</div>` +
-    slots.map(s => `<div class="fr-seat"><b>${s}</b><br>aguardando…<br>(bot)</div>`).join('');
+    slots.map(s => `<div class="fr-seat"><b>${s}</b><br>🤖 Bot</div>`).join('');
 }
 
 /* timer de turno — tempo para jogar cada rodada */
@@ -3761,7 +3755,7 @@ function showMatchEnd(winnerTeam) {
         roomSeries = [0, 0];
       }
     } else {
-      $('endSub').textContent = `Amistoso na sala ${roomCfg.code || ''} contra ${rivalNames} — não vale troféus.`;
+      $('endSub').textContent = `Amistoso na mesa personalizada contra ${rivalNames} — não vale troféus.`;
     }
     $('endTroph').hidden = true;
     $('endArena').hidden = true;
@@ -3879,22 +3873,18 @@ $('btnPalhacos').addEventListener('click', () => {
   const hn = g.handNum;
   schedule(() => { if (g.handNum === hn) nextHand(true); }, 1000);
 });
-$('btnCopyInvite').addEventListener('click', async () => {
-  const btn = $('btnCopyInvite');
-  const txt = `Bora um truco? Entra na minha sala ${roomCfg.code} no Trucada! 🃏`;
-  try {
-    await navigator.clipboard.writeText(txt);
-    btn.textContent = '✔ Copiado!';
-  } catch (e) {
-    btn.textContent = roomCfg.code;
-  }
-  setTimeout(() => { btn.textContent = '📋 Copiar convite'; }, 1800);
+$('gemChip').addEventListener('click', () => {
+  openDialog(`
+    <h2>💎 Gemas</h2>
+    <p>A moeda premium chega no lançamento, junto com a loja de itens exclusivos e o passe premium. No protótipo, tudo se compra com 🪙 conquistadas jogando.</p>
+    <div class="btns"><button class="gold" id="dOk">Entendi</button></div>`);
+  $('dOk').onclick = closeDialog;
 });
 
-// bônus único para testar a loja completa
+// bônus único de boas-vindas (aparelhos que já receberam o antigo não mudam)
 if (!localStorage.getItem('trucada_grant1')) {
   localStorage.setItem('trucada_grant1', '1');
-  store.coins = store.coins + 5000;
+  store.coins = store.coins + 300;
 }
 
 // migração: pacotes de falas antigos viram falas avulsas equivalentes
