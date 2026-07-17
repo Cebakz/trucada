@@ -1,0 +1,3991 @@
+<meta charset="utf-8">
+<title>Trucada — Truco Paulista</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<!-- PWA: no site publicado, "Adicionar à tela de início" abre em tela cheia -->
+<meta name="theme-color" content="#0E3B2E">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Trucada">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  :root {
+    --felt-900: #0E3B2E;
+    --felt-700: #175243;
+    --felt-600: #1E6151;
+    --wood: #5C3A21;
+    --wood-dark: #3F2814;
+    --cream: #F6EFDD;
+    --cream-dim: #CBC2AA;
+    --gold: #E0A93E;
+    --gold-soft: #F3CE7E;
+    --red: #C4392F;
+    --ink: #20242B;
+    --shadow: rgba(0, 0, 0, .45);
+    --disp: Impact, 'Arial Narrow Bold', 'Franklin Gothic Medium', sans-serif;
+    --body: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --card-face: Georgia, 'Times New Roman', serif;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body { height: 100%; }
+
+  body {
+    margin: 0;
+    font-family: var(--body);
+    color: var(--cream);
+    background:
+      radial-gradient(ellipse 120% 90% at 50% 42%, var(--felt-700) 0%, var(--felt-900) 68%, #082419 100%);
+    display: flex;
+    justify-content: center;
+    min-height: 100dvh;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  #app {
+    width: 100%;
+    max-width: 430px;
+    height: 100dvh; /* altura travada: as abas rolam por dentro e a nav fica fixa */
+    display: flex;
+    flex-direction: column;
+    padding: 10px 12px calc(12px + env(safe-area-inset-bottom));
+    position: relative;
+    overflow: hidden;
+  }
+
+  button {
+    font-family: var(--body);
+    border: none;
+    border-radius: 10px;
+    padding: 12px 22px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    color: var(--cream);
+    background: rgba(246, 239, 221, .14);
+    box-shadow: 0 2px 6px var(--shadow);
+  }
+  button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  button:disabled { opacity: .35; cursor: default; }
+  button.truco {
+    font-family: var(--disp);
+    font-size: 19px;
+    letter-spacing: .06em;
+    background: linear-gradient(180deg, var(--red) 0%, #96241C 100%);
+  }
+  button.gold {
+    background: linear-gradient(180deg, var(--gold) 0%, #B37F1D 100%);
+    color: #2A1D04;
+  }
+  button.ghost { background: rgba(246, 239, 221, .1); font-weight: 400; }
+  button.big {
+    width: 100%;
+    max-width: 300px;
+    padding: 16px 22px;
+    font-family: var(--disp);
+    font-size: 22px;
+    letter-spacing: .06em;
+    border-radius: 14px;
+  }
+
+  /* ══════════ MENU (estilo Clash Royale) ══════════ */
+  #menuView {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding-top: 8px;
+  }
+  .topbar {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .lvl {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: linear-gradient(180deg, #4A90D9 0%, #2E5FA3 100%);
+    border: 2px solid #BFD8F5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+  .cur {
+    flex: 1;
+    background: rgba(8, 36, 25, .6);
+    border: 1px solid rgba(246, 239, 221, .2);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 13px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .cur b { color: var(--gold-soft); }
+  .banner {
+    width: 100%;
+    max-width: 320px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(180deg, var(--wood) 0%, var(--wood-dark) 100%);
+    border: 1px solid #75512F;
+    border-radius: 12px;
+    padding: 8px 12px;
+    cursor: pointer;
+  }
+  .banner .b-info { flex: 1; min-width: 0; }
+  .banner .b-name { font-family: var(--disp); font-size: 18px; letter-spacing: .04em; }
+  .banner .b-sub { font-size: 11px; color: var(--cream-dim); }
+  .banner .b-troph {
+    background: rgba(0, 0, 0, .28);
+    border: 1px solid var(--gold);
+    color: var(--gold-soft);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+  .mc-face {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid rgba(246, 239, 221, .35);
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .lvl { position: relative; }
+  .lvl .lvl-bar {
+    position: absolute;
+    left: 3px;
+    right: 3px;
+    bottom: 2px;
+    height: 3px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, .25);
+    overflow: hidden;
+  }
+  .lvl .lvl-bar div { height: 100%; background: #FFE9B0; }
+
+  .dot {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #E74C3C;
+    box-shadow: 0 0 6px rgba(231, 76, 60, .85);
+  }
+  .road-btn { padding: 7px 14px; font-size: 12px; margin-top: 6px; }
+  #arenaCard { cursor: pointer; transition: transform .12s ease; }
+  #arenaCard:active { transform: scale(.98); }
+  .road-hint {
+    font-size: 11px;
+    color: var(--gold-soft);
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* caminho de troféus serpenteando, estilo Clash Royale */
+  .path {
+    width: 100%;
+    max-width: 340px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  .path::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 20px;
+    bottom: 20px;
+    border-left: 5px dashed rgba(224, 169, 62, .4);
+    transform: translateX(-50%);
+  }
+  .pnode-row { position: relative; display: flex; padding: 8px 0; z-index: 1; }
+  .pnode-row.left { justify-content: flex-start; padding-left: 13%; }
+  .pnode-row.right { justify-content: flex-end; padding-right: 13%; }
+  .pnode-row::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 21%;
+    border-top: 4px dashed rgba(224, 169, 62, .3);
+  }
+  .pnode-row.left::before { left: 29%; }
+  .pnode-row.right::before { right: 29%; }
+  .pnode { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .pn-circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, var(--felt-600) 0%, #0A2C21 85%);
+    border: 3px solid rgba(246, 239, 221, .4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 21px;
+    box-shadow: 0 3px 8px var(--shadow);
+  }
+  .pn-label {
+    font-size: 10px;
+    background: rgba(8, 36, 25, .8);
+    border-radius: 999px;
+    padding: 2px 9px;
+    color: var(--cream-dim);
+    white-space: nowrap;
+  }
+  .pnode.locked .pn-circle { filter: grayscale(.75); opacity: .55; }
+  .pnode.done .pn-circle { border-color: rgba(224, 169, 62, .5); opacity: .75; color: var(--gold-soft); }
+  .pnode.claimable { cursor: pointer; }
+  .pnode.claimable .pn-circle {
+    border-color: var(--gold);
+    animation: pulseRing 1.2s ease-in-out infinite;
+  }
+  .pnode.claimable .pn-label { color: var(--gold-soft); font-weight: 700; }
+
+  .arena-banner {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    border-radius: 14px;
+    border: 2px solid rgba(255, 255, 255, .22);
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 8px 0;
+    box-shadow: 0 4px 12px var(--shadow);
+  }
+  .arena-banner.locked { filter: grayscale(.65); opacity: .75; }
+  .ab-emblem {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, .3);
+    border: 2.5px solid rgba(255, 255, 255, .5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 27px;
+    flex-shrink: 0;
+  }
+  .ab-info { flex: 1; min-width: 0; }
+  .ab-info b { display: block; font-family: var(--disp); font-size: 16px; letter-spacing: .03em; }
+  .ab-info span { font-size: 11px; color: rgba(255, 255, 255, .8); }
+
+  .you-strip {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, #2E5FA3 0%, #1D3F70 100%);
+    border: 2px solid #7FB3E8;
+    border-radius: 14px;
+    padding: 8px 12px;
+    margin: 8px 0;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, .45);
+  }
+  .you-strip .p-node {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2.5px solid #AFD3F5;
+    flex-shrink: 0;
+  }
+  .you-strip .p-node svg { width: 100%; height: 100%; display: block; }
+  .you-strip b { display: block; font-size: 13px; }
+  .you-strip span { font-size: 11px; color: #CFE3F8; }
+
+  /* telas de aba (não-modais), com a barra inferior persistente */
+  .tab-screen {
+    flex: 1;
+    width: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    overflow-y: auto;
+    padding-bottom: 10px;
+  }
+  .tab-screen[hidden] { display: none; }
+  .screen-title {
+    font-family: var(--disp);
+    font-size: 24px;
+    letter-spacing: .05em;
+    color: var(--gold-soft);
+  }
+  .screen-sub { margin: -6px 0 0; font-size: 13px; color: var(--cream-dim); text-align: center; }
+  .back-fab {
+    position: sticky;
+    top: 2px;
+    align-self: flex-start;
+    z-index: 6;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    background: rgba(8, 36, 25, .92);
+    border: 1px solid rgba(224, 169, 62, .45);
+    box-shadow: 0 3px 10px var(--shadow);
+  }
+  .friends-btn { width: 100%; max-width: 320px; }
+  .fr-note { margin: 0; font-size: 11px; color: var(--cream-dim); line-height: 1.5; }
+  .fr-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+  }
+  .fr-seats { display: flex; gap: 8px; flex-wrap: wrap; }
+  .fr-seat {
+    flex: 1;
+    min-width: 68px;
+    background: rgba(246, 239, 221, .07);
+    border: 1px dashed rgba(246, 239, 221, .25);
+    border-radius: 10px;
+    padding: 8px 6px;
+    text-align: center;
+    font-size: 11px;
+    color: var(--cream-dim);
+    line-height: 1.4;
+  }
+  .fr-seat.me { border-style: solid; border-color: var(--gold); color: var(--cream); }
+
+  /* timer de turno */
+  #turnBar {
+    height: 5px;
+    max-width: 220px;
+    width: 60%;
+    margin: 2px auto 0;
+    background: rgba(246, 239, 221, .15);
+    border-radius: 999px;
+    overflow: hidden;
+    display: none;
+  }
+  #turnBar.on { display: block; }
+  #turnFill {
+    height: 100%;
+    width: 100%;
+    background: var(--gold);
+    border-radius: 999px;
+  }
+  #turnBar.low #turnFill { background: var(--red); }
+  .dlg-timer { margin: 0 0 6px; font-size: 13px; color: var(--gold-soft); font-weight: 700; }
+
+  /* tutorial (coach da primeira partida) */
+  #coach {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(8, 36, 25, .95);
+    border: 1.5px solid var(--gold);
+    border-radius: 12px;
+    padding: 9px 12px;
+    margin: 2px 0 4px;
+    font-size: 13px;
+    line-height: 1.45;
+    box-shadow: 0 4px 14px var(--shadow);
+  }
+  #coach[hidden] { display: none; }
+  #coach b { color: var(--gold-soft); }
+  #coach span { flex: 1; }
+  .tab-screen .shop-list, .tab-screen .road-list {
+    max-height: none;
+    overflow: visible;
+    width: 100%;
+    max-width: 340px;
+    margin: 0;
+  }
+  .tab-screen .char-grid { width: 100%; max-width: 340px; margin: 0; }
+  .tab-screen .char-note { max-width: 320px; text-align: center; }
+
+  .menu-missions {
+    width: 100%;
+    max-width: 320px;
+    background: rgba(8, 36, 25, .55);
+    border: 1px solid rgba(246, 239, 221, .18);
+    border-radius: 14px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .menu-missions h3 {
+    margin: 0;
+    font-family: var(--disp);
+    font-size: 14px;
+    letter-spacing: .08em;
+    color: var(--gold-soft);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .mission { display: flex; align-items: center; gap: 8px; }
+  .mission .m-txt { flex: 1; min-width: 0; }
+  .mission .m-name { font-size: 12px; }
+  .mission .m-bar {
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(246, 239, 221, .15);
+    margin-top: 3px;
+    overflow: hidden;
+  }
+  .mission .m-bar div {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold) 0%, var(--gold-soft) 100%);
+    border-radius: 999px;
+  }
+  .mission .m-r { font-size: 11px; color: var(--gold-soft); white-space: nowrap; font-weight: 700; }
+  .mission .m-done { font-size: 11px; color: var(--cream-dim); }
+
+  .road-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 46dvh;
+    overflow-y: auto;
+    margin: 10px 0;
+    text-align: left;
+  }
+  .road-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(246, 239, 221, .06);
+    border-radius: 10px;
+    padding: 7px 10px;
+    font-size: 12px;
+  }
+  .road-row.current { border: 1px solid var(--gold); }
+  .road-row.locked { opacity: .55; }
+  .road-row .r-tr { font-variant-numeric: tabular-nums; font-weight: 700; width: 66px; flex-shrink: 0; }
+  .road-row .r-rw { flex: 1; min-width: 0; }
+  .menu-arena {
+    width: 100%;
+    max-width: 320px;
+    background: rgba(8, 36, 25, .55);
+    border: 1px solid rgba(224, 169, 62, .35);
+    border-radius: 16px;
+    padding: 18px 16px 16px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .emblem {
+    width: 92px;
+    height: 92px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, var(--felt-600) 0%, #0A2C21 85%);
+    border: 3px solid var(--gold);
+    box-shadow: 0 0 22px rgba(224, 169, 62, .35), 0 6px 16px var(--shadow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 44px;
+  }
+  .menu-arena .label {
+    font-size: 10px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--cream-dim);
+    margin-top: 4px;
+  }
+  .menu-arena .aname {
+    font-family: var(--disp);
+    font-size: 24px;
+    letter-spacing: .03em;
+  }
+  .menu-arena .arange { font-size: 12px; color: var(--cream-dim); }
+  .bar {
+    width: 100%;
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(246, 239, 221, .14);
+    overflow: hidden;
+    margin-top: 6px;
+  }
+  .bar .fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--gold) 0%, var(--gold-soft) 100%);
+  }
+  .battle-row { width: 100%; max-width: 320px; display: flex; gap: 10px; }
+  #btnPlay1 { animation: ctaPulse 1.8s ease-in-out infinite; }
+  @keyframes ctaPulse {
+    0%, 100% { box-shadow: 0 2px 6px var(--shadow); transform: scale(1); }
+    50% { box-shadow: 0 0 20px rgba(224, 169, 62, .6), 0 2px 6px var(--shadow); transform: scale(1.02); }
+  }
+  .battle-row .gold { flex: 1.6; }
+  .battle-row .blue { flex: 1; }
+  button.blue { background: linear-gradient(180deg, #4A90D9 0%, #2E5FA3 100%); }
+  button.big small {
+    display: block;
+    font-family: var(--body);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .12em;
+    opacity: .85;
+  }
+  .shop-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 10px 0 14px;
+    max-height: 46dvh;
+    overflow-y: auto;
+    text-align: left;
+  }
+  .shop-h {
+    font-family: var(--disp);
+    letter-spacing: .06em;
+    color: var(--gold-soft);
+    font-size: 15px;
+    margin-top: 6px;
+  }
+  .shop-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(246, 239, 221, .07);
+    border-radius: 10px;
+    padding: 8px 10px;
+  }
+  .shop-prev {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    overflow: hidden;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+  }
+  .shop-prev svg { width: 100%; height: 100%; }
+  .deck-prev {
+    width: 30px;
+    height: 44px;
+    border-radius: 5px;
+    border: 3px solid;
+    box-shadow: 0 2px 5px var(--shadow);
+  }
+  .table-prev {
+    width: 44px;
+    height: 32px;
+    border-radius: 8px;
+    border: 3px solid;
+    box-shadow: 0 2px 5px var(--shadow);
+  }
+  .shop-txt { flex: 1; min-width: 0; }
+  .shop-txt b { display: block; font-size: 13px; }
+  .shop-txt span {
+    font-size: 11px;
+    color: var(--cream-dim);
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .shop-owned { font-size: 11px; color: var(--gold-soft); font-weight: 700; white-space: nowrap; }
+  button.sm { padding: 8px 12px; font-size: 12px; border-radius: 8px; white-space: nowrap; }
+  /* barra inferior estilo Clash Royale: aba central maior e elevada */
+  .bottom-nav {
+    margin-top: auto;
+    width: calc(100% + 24px);
+    margin-left: -12px;
+    margin-bottom: calc(-12px - env(safe-area-inset-bottom));
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    background: linear-gradient(180deg, #0F3A2E 0%, #062016 100%);
+    border-top: 2px solid rgba(224, 169, 62, .4);
+    border-radius: 18px 18px 0 0;
+    padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+  }
+  .nav-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 9px 2px;
+    border-radius: 12px;
+    background: linear-gradient(180deg, #14463A 0%, #0C3025 100%);
+    border: 1.5px solid rgba(246, 239, 221, .12);
+    box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .35);
+    font-size: 20px;
+    position: relative;
+    color: var(--cream-dim);
+  }
+  .nav-btn span {
+    display: none;
+    font-size: 10px;
+    letter-spacing: .06em;
+    font-weight: 800;
+  }
+  .nav-btn.active {
+    flex: 1.6;
+    margin-top: -16px;
+    padding: 12px 2px 10px;
+    font-size: 25px;
+    background: linear-gradient(180deg, var(--gold-soft) 0%, var(--gold) 35%, #A87718 100%);
+    border-color: #FFE9B0;
+    color: #2A1D04;
+    box-shadow: 0 5px 14px rgba(0, 0, 0, .45), inset 0 -3px 0 rgba(0, 0, 0, .28);
+  }
+  .nav-btn.active span { display: block; color: #2A1D04; }
+  .nav-btn .nav-dot { position: absolute; top: 5px; right: 9px; }
+  .reward-line { font-size: 14px; color: var(--gold-soft); font-weight: 700; margin-bottom: 8px; }
+
+  /* ══════════ JOGO ══════════ */
+  #gameView { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow-y: auto; }
+  #gameView[hidden], #menuView[hidden] { display: none; }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 12px;
+    background: linear-gradient(180deg, var(--wood) 0%, var(--wood-dark) 100%);
+    border: 1px solid #75512F;
+    border-radius: 10px;
+    box-shadow: 0 3px 10px var(--shadow);
+  }
+  #btnMenu, #btnSound, #btnSpeed {
+    padding: 6px 12px;
+    font-size: 16px;
+    background: rgba(246, 239, 221, .12);
+    flex-shrink: 0;
+  }
+
+  #splash {
+    position: absolute;
+    inset: 0;
+    z-index: 100;
+    background: radial-gradient(ellipse 120% 90% at 50% 42%, var(--felt-700) 0%, var(--felt-900) 68%, #082419 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    animation: splashOut .5s ease 1.1s forwards;
+  }
+  .sp-card { font-size: 64px; animation: pop .5s ease; }
+  .sp-name {
+    font-family: var(--disp);
+    font-size: 44px;
+    letter-spacing: .08em;
+    color: var(--gold-soft);
+    text-shadow: 0 4px 16px rgba(0, 0, 0, .55);
+  }
+  @keyframes splashOut { to { opacity: 0; visibility: hidden; } }
+  .arena { min-width: 0; flex: 1; }
+  .arena .label {
+    font-size: 10px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--gold-soft);
+    opacity: .85;
+  }
+  .arena .name {
+    font-family: var(--disp);
+    font-size: 15px;
+    letter-spacing: .03em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .trophies {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    color: var(--gold-soft);
+    font-size: 13px;
+    white-space: nowrap;
+  }
+  .score {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.25;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+  .score b { font-size: 15px; }
+  .vale {
+    display: inline-block;
+    margin-top: 2px;
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: var(--red);
+    color: var(--cream);
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: .05em;
+  }
+  .vale.v1 { background: rgba(246, 239, 221, .16); font-weight: 400; }
+
+  /* faixa de anúncios — em fluxo, nunca cobre cartas */
+  #announceBar {
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 0 0;
+  }
+  #announce {
+    font-family: var(--disp);
+    font-size: 20px;
+    letter-spacing: .05em;
+    color: var(--cream);
+    background: rgba(8, 36, 25, .88);
+    border: 1.5px solid rgba(246, 239, 221, .3);
+    padding: 6px 20px;
+    border-radius: 999px;
+    white-space: nowrap;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    opacity: 0;
+  }
+  #announce.show { animation: announceIn 1.6s ease forwards; }
+  #announce.good { color: var(--gold-soft); border-color: var(--gold); }
+  #announce.bad  { color: #F2A9A1; border-color: var(--red); }
+  @keyframes announceIn {
+    0%   { opacity: 0; transform: scale(.75); }
+    12%  { opacity: 1; transform: scale(1.04); }
+    20%  { transform: scale(1); }
+    80%  { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  /* assentos (oponentes / parceiro) */
+  #seatsRow {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 18px;
+    padding: 4px 4px 0;
+    min-height: 96px;
+  }
+  #seatsRow.mode2 { justify-content: center; min-height: 88px; }
+  .seat {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .seat.col { flex-direction: column; gap: 4px; }
+
+  .avatar { display: flex; flex-direction: column; align-items: center; gap: 3px; flex-shrink: 0; }
+  .avatar .face {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #7A5230 0%, var(--wood-dark) 80%);
+    border: 2.5px solid rgba(246, 239, 221, .35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    box-shadow: 0 3px 8px var(--shadow);
+  }
+  .face svg, .mc-face svg, .cface svg { width: 100%; height: 100%; display: block; }
+  .avatar .name {
+    font-size: 10px;
+    color: var(--cream-dim);
+    white-space: nowrap;
+    max-width: 82px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .avatar.turn .face {
+    border-color: var(--gold);
+    animation: pulseRing 1.2s ease-in-out infinite;
+  }
+  @keyframes pulseRing {
+    0%, 100% { box-shadow: 0 0 0 3px rgba(224, 169, 62, .4), 0 3px 8px var(--shadow); }
+    50%      { box-shadow: 0 0 0 7px rgba(224, 169, 62, .12), 0 3px 8px var(--shadow); }
+  }
+
+  .backs { display: flex; gap: 6px; align-items: center; }
+  .mini-back {
+    width: 26px;
+    height: 38px;
+    border-radius: 4px;
+    background: repeating-linear-gradient(45deg, #7D2B24 0 4px, #6E241E 4px 8px);
+    border: 2px solid var(--cream);
+    box-shadow: 0 2px 5px var(--shadow);
+  }
+
+  .bubble {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--cream);
+    color: var(--ink);
+    padding: 7px 11px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+    max-width: 170px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-shadow: 0 4px 12px var(--shadow);
+    display: none;
+    z-index: 20;
+  }
+  .bubble.show { display: block; animation: pop .22s ease-out; }
+  .bubble::after {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 7px solid transparent;
+    border-bottom-color: var(--cream);
+    border-top: 0;
+  }
+  .bubble.up {
+    top: auto;
+    bottom: calc(100% + 8px);
+  }
+  .bubble.up::after {
+    top: auto;
+    bottom: -6px;
+    border-bottom: 0;
+    border-top: 7px solid var(--cream);
+  }
+
+  /* mesa */
+  #tableArea {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin: 4px 2px;
+    border-radius: 26px;
+    border: 4px solid rgba(92, 58, 33, .85);
+    background:
+      radial-gradient(ellipse at 50% 45%, var(--felt-600) 0%, rgba(30, 97, 81, .25) 75%),
+      rgba(10, 44, 33, .35);
+    box-shadow: inset 0 0 44px rgba(0, 0, 0, .3), 0 4px 14px var(--shadow);
+    min-height: 250px;
+  }
+  #slots {
+    display: grid;
+    grid-template-columns: 66px 76px 66px;
+    grid-template-areas:
+      '.    top    .'
+      'left vira   right'
+      '.    bottom .';
+    gap: 6px 8px;
+    justify-items: center;
+    align-items: center;
+  }
+  #slotTop    { grid-area: top; }
+  #slotLeft   { grid-area: left; }
+  #slotRight  { grid-area: right; }
+  #slotBottom { grid-area: bottom; }
+  #viraBox    { grid-area: vira; text-align: center; transform: rotate(-8deg); }
+  #viraBox .tag {
+    font-size: 9px;
+    letter-spacing: .18em;
+    color: var(--cream-dim);
+    margin-bottom: 3px;
+    text-transform: uppercase;
+  }
+  #slots.mode1 #slotLeft, #slots.mode1 #slotRight { visibility: hidden; }
+
+  .slot {
+    width: 64px;
+    height: 92px;
+    border-radius: 8px;
+    border: 1.5px dashed rgba(246, 239, 221, .22);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .slot .card.play-bottom { animation: playBottom .4s cubic-bezier(.2, .85, .3, 1); }
+  .slot .card.play-top { animation: playTop .45s cubic-bezier(.2, .85, .3, 1); }
+  .slot .card.play-left { animation: playLeft .45s cubic-bezier(.2, .85, .3, 1); }
+  .slot .card.play-right { animation: playRight .45s cubic-bezier(.2, .85, .3, 1); }
+  @keyframes playBottom {
+    from { transform: translateY(180px) rotate(8deg) scale(.92); opacity: .4; }
+    to   { transform: none; opacity: 1; }
+  }
+  @keyframes playTop {
+    from { transform: translateY(-160px) rotateY(150deg) scale(.85); opacity: .3; }
+    60%  { opacity: 1; }
+    to   { transform: none; opacity: 1; }
+  }
+  @keyframes playLeft {
+    from { transform: translateX(-150px) rotateY(150deg) scale(.85); opacity: .3; }
+    60%  { opacity: 1; }
+    to   { transform: none; opacity: 1; }
+  }
+  @keyframes playRight {
+    from { transform: translateX(150px) rotateY(150deg) scale(.85); opacity: .3; }
+    60%  { opacity: 1; }
+    to   { transform: none; opacity: 1; }
+  }
+
+  #vazas {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+  }
+
+  /* assentos laterais do 2v2 (rivais nas bordas da mesa, como no TrucON) */
+  .side-seat {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    z-index: 6;
+  }
+  /* sentados NA borda da mesa, como numa mesa de bar */
+  .side-seat.left { left: -10px; }
+  .side-seat.right { right: -10px; }
+  .side-seat .avatar .face { width: 46px; height: 46px; }
+  .side-seat .avatar .name {
+    max-width: 62px;
+    font-size: 9px;
+    background: rgba(8, 36, 25, .75);
+    border-radius: 999px;
+    padding: 1px 7px;
+  }
+  /* leque vertical de cartas junto ao jogador da lateral */
+  .side-seat .backs { flex-direction: column; gap: 0; }
+  .side-seat .mini-back + .mini-back { margin-top: -24px; }
+  .side-seat .bubble { top: 6px; transform: none; max-width: 120px; white-space: normal; }
+  .side-seat.left .bubble { left: calc(100% + 8px); }
+  .side-seat.left .bubble::after {
+    top: 14px; bottom: auto; left: -6px; right: auto; transform: none;
+    border: 7px solid transparent; border-left: 0; border-right-color: var(--cream);
+  }
+  .side-seat.right .bubble { right: calc(100% + 8px); left: auto; }
+  .side-seat.right .bubble::after {
+    top: 14px; bottom: auto; left: auto; right: -6px; transform: none;
+    border: 7px solid transparent; border-right: 0; border-left-color: var(--cream);
+  }
+
+  #btnCover.armed {
+    outline: 2px solid var(--gold);
+    color: var(--gold-soft);
+    background: rgba(224, 169, 62, .15);
+  }
+  #btnCover[hidden] { display: none; }
+
+  .fala-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin: 12px 0;
+    max-height: 42dvh;
+    overflow-y: auto;
+  }
+  .fala-btn { font-size: 13px; padding: 8px 12px; font-weight: 400; }
+  .vaza {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid rgba(246, 239, 221, .35);
+    background: transparent;
+  }
+  .vaza.win  { background: var(--gold); border-color: var(--gold); }
+  .vaza.loss { background: var(--red); border-color: var(--red); }
+  .vaza.draw { background: var(--cream-dim); border-color: var(--cream-dim); }
+
+  .ferro-banner {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--red);
+    color: var(--cream);
+    font-family: var(--disp);
+    font-size: 13px;
+    letter-spacing: .1em;
+    padding: 4px 14px;
+    border-radius: 999px;
+    white-space: nowrap;
+    z-index: 5;
+  }
+
+  /* cartas */
+  .card {
+    width: 64px;
+    height: 92px;
+    border-radius: 8px;
+    background: linear-gradient(160deg, #FFFDF6 0%, var(--cream) 100%);
+    color: var(--ink);
+    box-shadow: 0 3px 8px var(--shadow);
+    position: relative;
+    font-family: var(--card-face);
+    flex-shrink: 0;
+  }
+  .card.red { color: var(--red); }
+  .card .corner {
+    position: absolute;
+    top: 5px;
+    left: 7px;
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+  }
+  .card .corner small { display: block; font-size: 13px; }
+  .card .pip {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 34px;
+  }
+  .card.manilha {
+    box-shadow: 0 0 0 2px var(--gold), 0 0 14px rgba(224, 169, 62, .55);
+  }
+  .card.manilha::after {
+    content: 'manilha';
+    position: absolute;
+    bottom: 4px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-family: var(--body);
+    font-size: 8px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: #9A6E14;
+  }
+  .card.back {
+    background: repeating-linear-gradient(45deg, #7D2B24 0 6px, #6E241E 6px 12px);
+    border: 4px solid var(--cream);
+  }
+  .card.back::before {
+    content: '';
+    position: absolute;
+    inset: 6px;
+    border: 1px solid rgba(246, 239, 221, .5);
+    border-radius: 4px;
+  }
+  .card.small { width: 46px; height: 66px; }
+  .card.small .corner { font-size: 13px; top: 3px; left: 5px; }
+  .card.small .corner small { font-size: 10px; }
+  .card.small .pip { font-size: 22px; }
+
+  /* mão do jogador */
+  #msg {
+    text-align: center;
+    min-height: 26px;
+    font-size: 14px;
+    padding: 2px 8px;
+  }
+  #msg .pill {
+    display: inline-block;
+    padding: 4px 16px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 13px;
+  }
+  #msg .pill.me {
+    background: var(--gold);
+    color: #2A1D04;
+    animation: pulseSoft 1.4s ease-in-out infinite;
+  }
+  #msg .pill.bot {
+    background: rgba(246, 239, 221, .12);
+    color: var(--cream-dim);
+    font-weight: 400;
+  }
+  @keyframes pulseSoft {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.05); }
+  }
+
+  #playerArea {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 12px;
+  }
+  #youSeat { position: relative; }
+  #handRow {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 10px;
+    padding: 10px 0 6px;
+    min-height: 112px;
+  }
+  #handRow .card { transition: transform .15s ease; }
+  #handRow .card.deal { animation: dealIn .45s cubic-bezier(.2, .85, .3, 1) backwards; }
+  @keyframes dealIn {
+    from { transform: translateY(70px) rotate(10deg); opacity: 0; }
+    to   { transform: none; opacity: 1; }
+  }
+  #handRow .card.playable { cursor: pointer; }
+  #handRow .card.playable:active { transform: translateY(-10px); }
+  #handRow.myturn .card.playable { transform: translateY(-6px); }
+  #handRow .card.locked { filter: saturate(.55) brightness(.75); }
+
+  #actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    padding-bottom: 4px;
+    min-height: 52px;
+  }
+
+  /* diálogos */
+  #overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(4, 18, 12, .78);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 30;
+    padding: 20px;
+  }
+  #overlay.show { display: flex; }
+  .dialog {
+    background: linear-gradient(180deg, #14463A 0%, #0C3328 100%);
+    border: 1px solid rgba(224, 169, 62, .45);
+    border-radius: 14px;
+    padding: 22px 20px;
+    width: 100%;
+    max-width: 360px;
+    max-height: 88dvh;
+    overflow-y: auto;
+    text-align: center;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, .6);
+  }
+  .dialog h2 {
+    font-family: var(--disp);
+    font-size: 25px;
+    margin: 0 0 6px;
+    letter-spacing: .04em;
+    color: var(--gold-soft);
+    text-wrap: balance;
+  }
+  .dialog p { margin: 4px 0 12px; font-size: 14px; color: var(--cream); }
+  .dialog .cards { display: flex; justify-content: center; gap: 8px; margin: 8px 0 12px; }
+  .dialog .btns { display: flex; flex-direction: column; gap: 9px; }
+  .dialog .trophy-delta {
+    font-size: 30px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    margin: 8px 0 2px;
+  }
+  .dialog .trophy-delta.up { color: var(--gold); }
+  .dialog .trophy-delta.down { color: var(--red); }
+  .dialog .arena-progress { font-size: 12px; color: var(--cream-dim); margin-bottom: 14px; }
+
+  .dlg-vira { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 8px 0 4px; }
+  .dlg-vira .txt { font-size: 13px; color: var(--cream-dim); text-align: left; }
+  .dlg-vira .txt b { color: var(--gold-soft); }
+  .dlg-label { margin: 8px 0 2px; font-size: 12px; color: var(--cream-dim); }
+
+  /* grade de personagens */
+  .char-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin: 12px 0;
+  }
+  .char {
+    background: rgba(246, 239, 221, .07);
+    border: 1.5px solid transparent;
+    border-radius: 12px;
+    padding: 10px 4px 8px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .char .cface {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid rgba(246, 239, 221, .25);
+  }
+  .char .cname { font-size: 11px; font-weight: 700; }
+  .char .cstat { font-size: 9px; color: var(--cream-dim); line-height: 1.3; }
+  .char.sel { border-color: var(--gold); background: rgba(224, 169, 62, .14); }
+  .char.locked { opacity: .55; cursor: default; }
+  .char-note { font-size: 11px; color: var(--cream-dim); margin: 4px 0 12px; line-height: 1.5; }
+
+  /* carimbo TRUCO */
+  #stamp {
+    position: absolute;
+    top: 42%;
+    left: 50%;
+    z-index: 40;
+    transform: translate(-50%, -50%) rotate(-12deg) scale(3);
+    font-family: var(--disp);
+    font-size: 54px;
+    letter-spacing: .05em;
+    color: var(--gold);
+    -webkit-text-stroke: 2px var(--red);
+    text-shadow: 0 4px 18px rgba(0, 0, 0, .65);
+    opacity: 0;
+    pointer-events: none;
+  }
+  #stamp.slam { animation: slam .8s cubic-bezier(.2, 1.4, .4, 1) forwards; }
+  @keyframes slam {
+    0%   { opacity: 0; transform: translate(-50%, -50%) rotate(-12deg) scale(3); }
+    45%  { opacity: 1; transform: translate(-50%, -50%) rotate(-12deg) scale(1); }
+    80%  { opacity: 1; }
+    100% { opacity: 0; transform: translate(-50%, -50%) rotate(-12deg) scale(.96); }
+  }
+  @keyframes pop {
+    from { transform: scale(.6); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+  }
+
+  /* ══════════ fim de partida celebratório ══════════ */
+  #endView {
+    position: absolute;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: radial-gradient(ellipse 120% 90% at 50% 42%, var(--felt-700) 0%, var(--felt-900) 68%, #082419 100%);
+    overflow: hidden;
+  }
+  #endView[hidden] { display: none; }
+  #confettiBox { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+  .confetti { position: absolute; top: -14px; animation: confFall linear forwards; }
+  @keyframes confFall {
+    to { transform: translateY(108dvh) rotate(720deg); opacity: .75; }
+  }
+  .end-card {
+    width: 100%;
+    max-width: 340px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    animation: pop .4s ease;
+    position: relative;
+    z-index: 2;
+  }
+  .end-title {
+    font-family: var(--disp);
+    font-size: 46px;
+    letter-spacing: .06em;
+    color: var(--gold-soft);
+    text-shadow: 0 6px 22px rgba(0, 0, 0, .6);
+  }
+  .end-title.lose { color: #F2A9A1; }
+  .end-sub { margin: 0; font-size: 13px; color: var(--cream-dim); }
+  .end-troph {
+    font-size: 34px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+  .end-troph.up { color: var(--gold); }
+  .end-troph.down { color: var(--red); }
+  .end-arena {
+    width: 100%;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    background: rgba(8, 36, 25, .7);
+    border: 1px solid rgba(224, 169, 62, .4);
+    border-radius: 12px;
+    padding: 10px 12px;
+    text-align: left;
+  }
+  .end-arena[hidden] { display: none; }
+  .ea-emblem { font-size: 30px; flex-shrink: 0; }
+  .ea-txt { flex: 1; min-width: 0; }
+  .ea-txt b { font-family: var(--disp); letter-spacing: .03em; }
+  .ea-txt span { display: block; font-size: 11px; color: var(--cream-dim); }
+  .end-coins { font-size: 18px; font-weight: 800; color: var(--gold-soft); }
+  #endView .btns { width: 100%; display: flex; flex-direction: column; gap: 9px; margin-top: 4px; }
+
+  /* moedas voando para o contador */
+  .fly-coin {
+    position: fixed;
+    z-index: 200;
+    font-size: 18px;
+    pointer-events: none;
+  }
+  .cur.bump { animation: curBump .35s ease; }
+  @keyframes curBump {
+    40% { transform: scale(1.14); }
+  }
+
+  /* indicador de mão/pé */
+  .role-tag {
+    font-size: 8px;
+    letter-spacing: .1em;
+    background: rgba(224, 169, 62, .92);
+    color: #2A1D04;
+    border-radius: 999px;
+    padding: 1px 7px;
+    font-weight: 800;
+  }
+  .role-tag[hidden] { display: none; }
+
+  /* vazas clicáveis (rever a vaza) */
+  .vaza.win, .vaza.loss, .vaza.draw { cursor: pointer; }
+
+  /* sequência diária */
+  .stk-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin: 10px 0;
+  }
+  .stk-cell {
+    background: rgba(246, 239, 221, .07);
+    border: 1.5px solid transparent;
+    border-radius: 10px;
+    padding: 8px 2px;
+    font-size: 10px;
+    line-height: 1.5;
+  }
+  .stk-cell b { display: block; font-size: 10px; }
+  .stk-cell span { color: var(--gold-soft); font-weight: 700; }
+  .stk-cell.done { opacity: .5; }
+  .stk-cell.now { border-color: var(--gold); animation: pulseSoft 1.4s ease-in-out infinite; }
+
+  /* modo rápido: animações de mesa mais curtas */
+  #btnSpeed.on { outline: 2px solid var(--gold); color: var(--gold-soft); background: rgba(224, 169, 62, .15); }
+  #gameView.fast .slot .card.play-bottom, #gameView.fast .slot .card.play-top,
+  #gameView.fast .slot .card.play-left, #gameView.fast .slot .card.play-right { animation-duration: .22s; }
+  #gameView.fast #handRow .card.deal { animation-duration: .25s; }
+
+  @media (prefers-reduced-motion: reduce) {
+    #stamp.slam { animation-duration: .01s; }
+    .slot .card.play-bottom, .slot .card.play-top, .slot .card.play-left,
+    .slot .card.play-right, #handRow .card.deal, #btnPlay1 { animation: none; }
+    #handRow .card { transition: none; }
+    .avatar.turn .face, #msg .pill.me { animation: none; }
+    #announce.show { animation-duration: .9s; }
+  }
+</style>
+
+<div id="app">
+
+  <div id="splash"><div class="sp-card">🃏</div><div class="sp-name">TRUCADA</div></div>
+
+  <!-- ══════════ MENU ══════════ -->
+  <div id="menuView">
+    <div class="topbar">
+      <div class="lvl"><span id="mLevel">1</span><div class="lvl-bar"><div id="mXp" style="width:0%"></div></div></div>
+      <div class="cur">🪙 <b id="mCoins">0</b></div>
+      <div class="cur">💎 <b id="mGems">3</b></div>
+    </div>
+    <div class="tab-screen" id="screenBattle">
+      <div class="banner" id="btnChars">
+        <div class="mc-face" id="mCharFace"></div>
+        <div class="b-info">
+          <div class="b-name" id="mCharName">Zeca</div>
+          <div class="b-sub">🎭 toque para trocar de personagem</div>
+        </div>
+        <div class="b-troph">🏆 <span id="mTrophies">0</span></div>
+      </div>
+      <div class="menu-arena" id="arenaCard" role="button" tabindex="0">
+        <div class="emblem" id="mEmblem">🍺</div>
+        <div class="aname" id="mArena">Arena 1</div>
+        <div class="arange" id="mRange"></div>
+        <div class="bar"><div class="fill" id="mFill" style="width:0%"></div></div>
+        <div class="arange" id="mNextReward"></div>
+        <div class="road-hint">👆 Toque para abrir seu caminho <span class="dot" id="roadDot" hidden></span></div>
+      </div>
+      <div class="menu-missions" id="missionsCard"></div>
+      <div class="battle-row">
+        <button class="gold big" id="btnPlay1">BATALHA<small>truco 1v1</small></button>
+        <button class="blue big" id="btnPlay2">2v2<small>em dupla</small></button>
+      </div>
+      <div class="menu-missions" id="passCard" role="button" tabindex="0" style="cursor:pointer"></div>
+      <button class="ghost friends-btn" id="btnFriends">👥 Criar partida com amigos</button>
+    </div>
+
+    <div class="tab-screen" id="screenPass" hidden>
+      <button class="ghost back-fab" id="btnPassBack">‹ Voltar</button>
+      <div class="screen-title">🎫 Passe da temporada</div>
+      <p class="screen-sub" id="passSub"></p>
+      <div class="shop-list" id="passContent"></div>
+    </div>
+
+    <div class="tab-screen" id="screenFriends" hidden>
+      <button class="ghost back-fab" id="btnFriendsBack">‹ Voltar</button>
+      <div class="screen-title">👥 Sala com amigos</div>
+      <div class="menu-missions">
+        <h3>Sala <span id="roomCode">TRC-0000</span></h3>
+        <button class="gold sm" id="btnCopyInvite">📋 Copiar convite</button>
+        <p class="fr-note">No protótipo os amigos entram como bots — a sala online de verdade chega na versão publicada.</p>
+      </div>
+      <div class="menu-missions">
+        <h3>Regras da sala</h3>
+        <div class="fr-row"><span>Modo</span>
+          <span><button class="sm gold" id="frMode1">1v1</button>
+          <button class="sm ghost" id="frMode2">2v2</button></span></div>
+        <div class="fr-row"><span>Mão de ferro (11×11)</span>
+          <button class="sm gold" id="frFerro">Ligada</button></div>
+        <div class="fr-row"><span>Carta encoberta</span>
+          <button class="sm gold" id="frCober">Ligada</button></div>
+      </div>
+      <div class="menu-missions">
+        <h3>🍺 Regras de bar</h3>
+        <div class="fr-row"><span>Três palhaços (Q+J+K pede mesa nova)</span>
+          <button class="sm ghost" id="frPalhacos">Desligada</button></div>
+        <div class="fr-row"><span>Três melas (mão podre)</span>
+          <button class="sm ghost" id="frMela">Oficial</button></div>
+        <div class="fr-row"><span>Melhor de 3 quedas</span>
+          <button class="sm ghost" id="frQuedas">Desligada</button></div>
+        <p class="fr-note">Regras caseiras, fora do regulamento oficial — toque para alternar. O padrão é sempre o oficial.</p>
+      </div>
+      <div class="menu-missions">
+        <h3>Mesa</h3>
+        <div class="fr-seats" id="frSeats"></div>
+      </div>
+      <button class="gold big" id="btnFriendsStart">COMEÇAR PARTIDA</button>
+    </div>
+
+    <div class="tab-screen" id="screenShop" hidden>
+      <div class="screen-title">🛒 Loja</div>
+      <p class="screen-sub" id="shopCoins"></p>
+      <div class="shop-list" id="shopContent"></div>
+      <button class="ghost" data-back>‹ Voltar para a batalha</button>
+    </div>
+
+    <div class="tab-screen" id="screenChars" hidden>
+      <div class="screen-title">🎭 Personagens</div>
+      <div class="char-grid" id="charsContent"></div>
+      <p class="char-note">Cada personagem tem <b>falas exclusivas</b> na mesa.
+      Os bloqueados são liberados subindo de arena — ou comprados na <b>🛒 Loja</b>.</p>
+      <button class="ghost" data-back>‹ Voltar para a batalha</button>
+    </div>
+
+    <div class="tab-screen" id="screenProfile" hidden>
+      <div class="screen-title">📊 Perfil</div>
+      <div id="profileContent"></div>
+      <button class="ghost" data-back>‹ Voltar para a batalha</button>
+    </div>
+
+    <div class="tab-screen" id="screenEvents" hidden>
+      <div class="screen-title">🏟️ Eventos</div>
+      <p class="screen-sub">Um modo especial por semana, com recompensa própria.</p>
+      <div id="eventsContent" style="width:100%; max-width:340px; display:flex; flex-direction:column; gap:12px"></div>
+      <button class="ghost" data-back>‹ Voltar para a batalha</button>
+    </div>
+
+    <div class="tab-screen" id="screenRoad" hidden>
+      <button class="ghost back-fab" id="btnRoadTop">‹ Voltar</button>
+      <div class="screen-title">🏆 Seu caminho</div>
+      <p class="screen-sub" id="roadTr"></p>
+      <div class="path" id="roadContent"></div>
+      <button class="ghost" id="btnRoadBack">‹ Voltar para a batalha</button>
+    </div>
+    <nav class="bottom-nav">
+      <button class="nav-btn" id="navShop">🛒<span>Loja</span></button>
+      <button class="nav-btn" id="navChars">🎭<span>Personagens</span></button>
+      <button class="nav-btn active" id="navBattle">⚔️<span>Batalha</span><span class="dot nav-dot" id="navDot" hidden></span></button>
+      <button class="nav-btn" id="navProfile">📊<span>Perfil</span><span class="dot nav-dot" id="profileDot" hidden></span></button>
+      <button class="nav-btn" id="navEvents">🏟️<span>Eventos</span><span class="dot nav-dot" id="eventsDot" hidden></span></button>
+    </nav>
+  </div>
+
+  <!-- ══════════ JOGO ══════════ -->
+  <div id="gameView" hidden>
+    <header>
+      <button id="btnMenu" title="Voltar ao menu">☰</button>
+      <button id="btnSound" title="Som">🔊</button>
+      <button id="btnSpeed" title="Jogo rápido">⚡</button>
+      <div class="arena">
+        <div class="label">Arena</div>
+        <div class="name" id="arenaName">Boteco da Esquina</div>
+        <div class="trophies">🏆 <span id="trophyCount">0</span></div>
+      </div>
+      <div class="score">
+        <span id="scoreLabelA">Você</span> <b id="scoreYou">0</b> × <b id="scoreBot">0</b> <span id="scoreLabelB">Ele</span><br>
+        <span class="vale v1" id="valeChip">vale 1</span>
+      </div>
+    </header>
+
+    <div id="announceBar"><span id="announce"></span></div>
+    <div id="coach" hidden>
+      <span id="coachTxt"></span>
+      <button class="gold sm" id="coachOk">OK</button>
+    </div>
+
+    <div id="seatsRow"></div>
+
+    <div id="tableArea">
+      <div class="ferro-banner" id="ferroBanner" hidden>MÃO DE FERRO — às escuras</div>
+      <div id="slots" class="mode1">
+        <div class="slot" id="slotTop"></div>
+        <div class="slot" id="slotLeft"></div>
+        <div id="viraBox">
+          <div class="tag">Vira</div>
+          <div id="viraCard"></div>
+        </div>
+        <div class="slot" id="slotRight"></div>
+        <div class="slot" id="slotBottom"></div>
+      </div>
+      <div id="vazas">
+        <div class="vaza" id="vz0"></div>
+        <div class="vaza" id="vz1"></div>
+        <div class="vaza" id="vz2"></div>
+      </div>
+    </div>
+
+    <div id="msg"></div>
+    <div id="turnBar"><div id="turnFill"></div></div>
+
+    <div id="playerArea">
+      <div id="youSeat">
+        <div class="avatar" id="youAvatar">
+          <div class="face" id="youFace">😎</div>
+          <div class="name">Você</div>
+          <div class="role-tag" id="role0" hidden></div>
+        </div>
+        <div class="bubble up" id="bubYou"></div>
+      </div>
+      <div id="handRow"></div>
+    </div>
+
+    <div id="actions">
+      <button class="ghost" id="btnFala">💬</button>
+      <button class="ghost" id="btnCover" hidden>🂠 Encoberta</button>
+      <button class="ghost" id="btnPalhacos" hidden>🃏 3 palhaços</button>
+      <button class="truco" id="btnTruco">TRUCO!</button>
+    </div>
+  </div>
+
+  <!-- fim de partida celebratório -->
+  <div id="endView" hidden>
+    <div id="confettiBox"></div>
+    <div class="end-card">
+      <div class="end-title" id="endTitle">VITÓRIA!</div>
+      <p class="end-sub" id="endSub"></p>
+      <div class="end-troph" id="endTroph" hidden></div>
+      <div class="end-arena" id="endArena" hidden>
+        <div class="ea-emblem" id="eaEmblem">🍺</div>
+        <div class="ea-txt">
+          <b id="eaName">Arena 1</b><span id="eaSub"></span>
+          <div class="bar"><div class="fill" id="eaFill" style="width:0%"></div></div>
+        </div>
+      </div>
+      <div class="end-coins" id="endCoins"></div>
+      <div class="btns">
+        <button class="gold big" id="endAgain">JOGAR DE NOVO</button>
+        <button class="ghost" id="endMenu">Voltar ao menu</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="stamp">TRUCO!</div>
+
+  <div id="overlay">
+    <div class="dialog" id="dialog"></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* ══════════ regras (porta do motor Dart truco_engine) ══════════ */
+
+const RANKS = ['4', '5', '6', '7', 'Q', 'J', 'K', 'A', '2', '3'];
+const SUITS = ['o', 'e', 'c', 'p']; // ouros < espadas < copas < paus
+const SUIT_SYM = { o: '♦', e: '♠', c: '♥', p: '♣' };
+const SUIT_RED = { o: true, c: true, e: false, p: false };
+const LADDER = { 1: 3, 3: 6, 6: 9, 9: 12 };
+const CALL_NAME = { 3: 'TRUCO!', 6: 'SEIS!', 9: 'NOVE!', 12: 'DOZE!' };
+const TARGET = 12;
+
+function fullDeck() {
+  const d = [];
+  for (const r of RANKS) for (const s of SUITS) d.push({ r, s });
+  return d;
+}
+
+const manilhaRank = viraR => RANKS[(RANKS.indexOf(viraR) + 1) % RANKS.length];
+const isManilha = (card, viraR) => card.r === manilhaRank(viraR);
+const strength = (card, viraR) =>
+  isManilha(card, viraR) ? 100 + SUITS.indexOf(card.s) : RANKS.indexOf(card.r);
+
+// As 6 regras de empate do Truco Paulista (times 0 e 1).
+function resolveHand(w) {
+  if (w.length < 2) return { finished: false };
+  const [r1, r2] = w;
+  if (w.length === 2) {
+    if (r1 === null && r2 !== null) return { finished: true, winner: r2 }; // regra 1
+    if (r1 !== null && r2 === null) return { finished: true, winner: r1 }; // regra 2
+    if (r1 !== null && r1 === r2) return { finished: true, winner: r1 };   // 2 a 0
+    return { finished: false };
+  }
+  const r3 = w[2];
+  if (r3 !== null) return { finished: true, winner: r3 };  // regras 3 e 5
+  if (r1 !== null) return { finished: true, winner: r1 };  // regra 6
+  return { finished: true, winner: null };                 // regra 4: mão nula
+}
+
+/* ══════════ progressão ══════════ */
+
+const ARENAS = [
+  { name: 'Boteco da Esquina', min: 0, emblem: '🍺', c1: '#7A4E22', c2: '#4A2E12' },
+  { name: 'Quintal de Casa', min: 300, emblem: '🏡', c1: '#2E7D46', c2: '#1A4A29' },
+  { name: 'Praça da Matriz', min: 600, emblem: '⛪', c1: '#8A7A2E', c2: '#54491A' },
+  { name: 'Bar da Sinuca', min: 1000, emblem: '🎱', c1: '#1F5FA8', c2: '#123A69' },
+  { name: 'Barraca de Praia', min: 1400, emblem: '🏖️', c1: '#0E8C7F', c2: '#08564E' },
+  { name: 'Fazenda Velha', min: 1900, emblem: '🌾', c1: '#8C5A2B', c2: '#57371A' },
+  { name: 'Arraiá', min: 2400, emblem: '🎪', c1: '#B0642C', c2: '#6E3D1A' },
+  { name: 'Campeonato Estadual', min: 3000, emblem: '🏆', c1: '#6E2C8E', c2: '#431A57' },
+  { name: 'Circuito Nacional', min: 3700, emblem: '🇧🇷', c1: '#1E7D3C', c2: '#B39B1D' },
+];
+
+const store = {
+  get trophies() { return +(localStorage.getItem('trucada_trophies') || 0); },
+  set trophies(v) { localStorage.setItem('trucada_trophies', v); },
+  get floor() { return +(localStorage.getItem('trucada_floor') || 0); },
+  set floor(v) { localStorage.setItem('trucada_floor', v); },
+  get charId() { return localStorage.getItem('trucada_char') || 'zeca'; },
+  set charId(v) { localStorage.setItem('trucada_char', v); },
+  get coins() { return +(localStorage.getItem('trucada_coins') || 0); },
+  set coins(v) { localStorage.setItem('trucada_coins', v); },
+  get gems() { return +(localStorage.getItem('trucada_gems') || 3); },
+  set gems(v) { localStorage.setItem('trucada_gems', v); },
+  get wins() { return +(localStorage.getItem('trucada_wins') || 0); },
+  set wins(v) { localStorage.setItem('trucada_wins', v); },
+  get losses() { return +(localStorage.getItem('trucada_losses') || 0); },
+  set losses(v) { localStorage.setItem('trucada_losses', v); },
+  get ownedChars() {
+    try { return JSON.parse(localStorage.getItem('trucada_ochars') || '[]'); }
+    catch (e) { return []; }
+  },
+  set ownedChars(v) { localStorage.setItem('trucada_ochars', JSON.stringify(v)); },
+  get ownedFalas() {
+    try { return JSON.parse(localStorage.getItem('trucada_ofalas') || '[]'); }
+    catch (e) { return []; }
+  },
+  set ownedFalas(v) { localStorage.setItem('trucada_ofalas', JSON.stringify(v)); },
+  get ownedSkins() {
+    try { return JSON.parse(localStorage.getItem('trucada_oskins') || '["classico"]'); }
+    catch (e) { return ['classico']; }
+  },
+  set ownedSkins(v) { localStorage.setItem('trucada_oskins', JSON.stringify(v)); },
+  get deckSkin() { return localStorage.getItem('trucada_skin') || 'classico'; },
+  set deckSkin(v) { localStorage.setItem('trucada_skin', v); },
+  get ownedTables() {
+    try { return JSON.parse(localStorage.getItem('trucada_otables') || '["verde"]'); }
+    catch (e) { return ['verde']; }
+  },
+  set ownedTables(v) { localStorage.setItem('trucada_otables', JSON.stringify(v)); },
+  get tableSkin() { return localStorage.getItem('trucada_table') || 'verde'; },
+  set tableSkin(v) { localStorage.setItem('trucada_table', v); },
+  get claimedRoad() {
+    try { return JSON.parse(localStorage.getItem('trucada_road') || '[]'); }
+    catch (e) { return []; }
+  },
+  set claimedRoad(v) { localStorage.setItem('trucada_road', JSON.stringify(v)); },
+  get missions() {
+    try { return JSON.parse(localStorage.getItem('trucada_missions') || 'null'); }
+    catch (e) { return null; }
+  },
+  set missions(v) { localStorage.setItem('trucada_missions', JSON.stringify(v)); },
+  get sound() { return localStorage.getItem('trucada_sound') !== '0'; },
+  set sound(v) { localStorage.setItem('trucada_sound', v ? '1' : '0'); },
+  get crowns() { return +(localStorage.getItem('trucada_crowns') || 0); },
+  set crowns(v) { localStorage.setItem('trucada_crowns', v); },
+  get passClaimed() {
+    try { return JSON.parse(localStorage.getItem('trucada_pass') || '[]'); }
+    catch (e) { return []; }
+  },
+  set passClaimed(v) { localStorage.setItem('trucada_pass', JSON.stringify(v)); },
+  get tutorialDone() { return localStorage.getItem('trucada_tut') === '1'; },
+  set tutorialDone(v) { localStorage.setItem('trucada_tut', v ? '1' : '0'); },
+  get fast() { return localStorage.getItem('trucada_fast') === '1'; },
+  set fast(v) { localStorage.setItem('trucada_fast', v ? '1' : '0'); },
+  get stats() {
+    try { return JSON.parse(localStorage.getItem('trucada_stats') || '{}'); }
+    catch (e) { return {}; }
+  },
+  set stats(v) { localStorage.setItem('trucada_stats', JSON.stringify(v)); },
+  get achvClaimed() {
+    try { return JSON.parse(localStorage.getItem('trucada_achv') || '[]'); }
+    catch (e) { return []; }
+  },
+  set achvClaimed(v) { localStorage.setItem('trucada_achv', JSON.stringify(v)); },
+  get eventData() {
+    try { return JSON.parse(localStorage.getItem('trucada_event') || 'null'); }
+    catch (e) { return null; }
+  },
+  set eventData(v) { localStorage.setItem('trucada_event', JSON.stringify(v)); },
+};
+
+function bumpStat(k, n = 1) {
+  const s = store.stats;
+  s[k] = (s[k] || 0) + n;
+  store.stats = s;
+}
+
+/* ══════════ som e vibração (Web Audio — sem arquivos) ══════════ */
+
+let audioCtx = null;
+function sfx(name) {
+  if (!store.sound) return;
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const t = audioCtx.currentTime;
+    const play = (freq, start, dur, type, vol, slide) => {
+      const o = audioCtx.createOscillator();
+      const gn = audioCtx.createGain();
+      o.type = type || 'triangle';
+      o.frequency.setValueAtTime(freq, t + start);
+      if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(40, freq + slide), t + start + dur);
+      gn.gain.setValueAtTime(vol || 0.14, t + start);
+      gn.gain.exponentialRampToValueAtTime(0.001, t + start + dur);
+      o.connect(gn);
+      gn.connect(audioCtx.destination);
+      o.start(t + start);
+      o.stop(t + start + dur + 0.02);
+    };
+    switch (name) {
+      case 'card': play(210, 0, 0.06, 'square', 0.07, -80); play(950, 0, 0.03, 'triangle', 0.05); break;
+      case 'deal': [0, 1, 2].forEach(i => play(480 + 70 * i, i * 0.07, 0.05, 'square', 0.05)); break;
+      case 'truco': play(110, 0, 0.4, 'sawtooth', 0.2, -35); play(165, 0.03, 0.35, 'sawtooth', 0.14); break;
+      case 'winVaza': play(523, 0, 0.09); play(659, 0.09, 0.09); play(784, 0.18, 0.16); break;
+      case 'loseVaza': play(330, 0, 0.14, 'triangle', 0.1, -70); break;
+      case 'coin': play(1318, 0, 0.07, 'sine', 0.12); play(1760, 0.06, 0.14, 'sine', 0.12); break;
+      case 'victory': [523, 659, 784, 1046].forEach((f, i) => play(f, i * 0.12, 0.24)); break;
+      case 'defeat': play(392, 0, 0.22, 'triangle', 0.12, -60); play(311, 0.22, 0.34, 'triangle', 0.12, -50); break;
+      case 'tap': play(660, 0, 0.04, 'sine', 0.05); break;
+    }
+  } catch (e) { /* áudio indisponível */ }
+}
+
+function buzz(pattern) {
+  if (!store.sound || !navigator.vibrate) return;
+  try { navigator.vibrate(pattern); } catch (e) { /* sem vibração */ }
+}
+
+/* ══════════ analytics local + captura de erros (stub do protótipo) ══════════ */
+
+function track(ev) {
+  try {
+    const a = JSON.parse(localStorage.getItem('trucada_analytics') || '{}');
+    a[ev] = (a[ev] || 0) + 1;
+    localStorage.setItem('trucada_analytics', JSON.stringify(a));
+  } catch (e) { /* sem analytics */ }
+}
+window.addEventListener('error', e => {
+  try {
+    localStorage.setItem('trucada_lasterror',
+      (e.message || 'erro') + ' @ linha ' + (e.lineno || '?'));
+  } catch (x) { /* ignora */ }
+});
+
+/* ══════════ missões diárias (estilo quests do Clash Royale) ══════════ */
+
+const MISSION_POOL = [
+  { id: 'win2', name: 'Vença 2 partidas', target: 2, ev: 'win', reward: 150 },
+  { id: 'play3', name: 'Jogue 3 partidas', target: 3, ev: 'game', reward: 100 },
+  { id: 'truco3', name: 'Peça truco 3 vezes', target: 3, ev: 'truco', reward: 120 },
+  { id: 'manilha4', name: 'Jogue 4 manilhas', target: 4, ev: 'manilha', reward: 120 },
+  { id: 'vaza10', name: 'Vença 10 vazas', target: 10, ev: 'vaza', reward: 150 },
+  { id: 'fala3', name: 'Solte 3 falas na mesa', target: 3, ev: 'fala', reward: 80 },
+];
+
+function todayKey() {
+  const d = new Date();
+  return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+}
+
+function dailyMissions() {
+  let m = store.missions;
+  if (!m || m.date !== todayKey()) {
+    const seed = [...todayKey()].reduce((a, c) => a + c.charCodeAt(0), 0);
+    const ids = [0, 1, 2].map(i => MISSION_POOL[(seed + i) % MISSION_POOL.length].id);
+    m = { date: todayKey(), ids, progress: {}, claimed: [] };
+    store.missions = m;
+  }
+  return m;
+}
+
+function missionEvent(ev, n = 1) {
+  const m = dailyMissions();
+  let changed = false;
+  for (const id of m.ids) {
+    const def = MISSION_POOL.find(x => x.id === id);
+    if (def && def.ev === ev && !m.claimed.includes(id)) {
+      m.progress[id] = Math.min(def.target, (m.progress[id] || 0) + n);
+      changed = true;
+    }
+  }
+  if (changed) store.missions = m;
+}
+
+function missionClaimable() {
+  const m = dailyMissions();
+  return m.ids.some(id => {
+    const def = MISSION_POOL.find(x => x.id === id);
+    return def && !m.claimed.includes(id) && (m.progress[id] || 0) >= def.target;
+  });
+}
+
+function missionResetTxt() {
+  const now = new Date();
+  const mid = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+  const ms = mid - now;
+  return `🕐 novas em ${Math.floor(ms / 36e5)}h ${Math.floor(ms % 36e5 / 6e4)}m`;
+}
+
+/* ══════════ conquistas (objetivos de longo prazo) ══════════ */
+
+const ACHV = [
+  { id: 'w1', icon: '🥇', name: 'Primeira vitória', target: 1, reward: 50, prog: () => store.wins },
+  { id: 'w10', icon: '🏅', name: 'Vença 10 partidas', target: 10, reward: 150, prog: () => store.wins },
+  { id: 'w50', icon: '🎖️', name: 'Vença 50 partidas', target: 50, reward: 400, prog: () => store.wins },
+  { id: 'truco20', icon: '📣', name: 'Truqueiro: peça 20 trucos', target: 20, reward: 150, prog: () => store.stats.trucos || 0 },
+  { id: 'aceita10', icon: '💪', name: 'Não corro não: aceite 10 trucos', target: 10, reward: 150, prog: () => store.stats.trucosAceitos || 0 },
+  { id: 'man30', icon: '👑', name: 'Rei das manilhas: jogue 30', target: 30, reward: 200, prog: () => store.stats.manilhas || 0 },
+  { id: 'vz100', icon: '🃏', name: 'Vença 100 vazas', target: 100, reward: 200, prog: () => store.stats.vazas || 0 },
+  { id: 'seq5', icon: '🔥', name: 'Embale 5 vitórias seguidas', target: 5, reward: 250, prog: () => store.stats.maxStreak || 0 },
+  { id: 'ar3', icon: '⛪', name: 'Alcance a Arena 3', target: 3, reward: 150, prog: () => arenaNumberOf(store.floor) },
+  { id: 'ar5', icon: '🏖️', name: 'Alcance a Arena 5', target: 5, reward: 300, prog: () => arenaNumberOf(store.floor) },
+  { id: 'ar7', icon: '🎪', name: 'Alcance a Arena 7', target: 7, reward: 500, prog: () => arenaNumberOf(store.floor) },
+  { id: 'dupla5', icon: '👥', name: 'Vença 5 partidas 2v2', target: 5, reward: 150, prog: () => store.stats.wins2 || 0 },
+  { id: 'ferro1', icon: '🦾', name: 'Vença uma mão de ferro', target: 1, reward: 250, prog: () => store.stats.ferroWins || 0 },
+  { id: 'buy5', icon: '🛒', name: 'Cliente da casa: 5 compras', target: 5, reward: 100, prog: () => store.stats.buys || 0 },
+];
+
+function achvClaimable() {
+  const c = store.achvClaimed;
+  return ACHV.some(a => !c.includes(a.id) && a.prog() >= a.target);
+}
+
+/* ══════════ evento semanal (modo especial rotativo) ══════════ */
+
+const EVENTS = [
+  { id: 'relampago', icon: '⚡', name: 'Truco Relâmpago', desc: 'Partida curta: vence quem fizer 6 pontos.', rules: { target: 6 } },
+  { id: 'esquenta', icon: '🔥', name: 'Mão Quente', desc: 'Toda mão já começa valendo 3 — sem rodada fria!', rules: { startValue: 3 } },
+  { id: 'cega', icon: '🕶️', name: 'Mesa Cega', desc: 'Ninguém vê as próprias cartas, como na mão de ferro. 3 pontos fecham.', rules: { blind: true, target: 3 } },
+];
+
+const weekKey = () => Math.floor(Date.now() / 6048e5);
+const currentEvent = () => EVENTS[weekKey() % EVENTS.length];
+
+function eventWeekData() {
+  let d = store.eventData;
+  if (!d || d.week !== weekKey()) {
+    d = { week: weekKey(), wins: 0, claimed: false };
+    store.eventData = d;
+  }
+  return d;
+}
+
+function eventClaimable() {
+  const d = eventWeekData();
+  return d.wins >= 3 && !d.claimed;
+}
+
+/* ══════════ sequência diária (streak de login) ══════════ */
+
+const STREAK_R = [25, 50, 75, 100, 125, 150, 250];
+
+function showStreakDialog() {
+  const today = todayKey();
+  if (localStorage.getItem('trucada_streakday') === today) return;
+  const yd = new Date(Date.now() - 864e5);
+  const yest = yd.getFullYear() + '-' + (yd.getMonth() + 1) + '-' + yd.getDate();
+  const prev = localStorage.getItem('trucada_streakday');
+  const n = prev === yest ? (+(localStorage.getItem('trucada_streakn') || 0)) + 1 : 1;
+  const idx = (n - 1) % 7;
+  const cells = STREAK_R.map((r, i) =>
+    `<div class="stk-cell${i < idx ? ' done' : i === idx ? ' now' : ''}">
+      <b>Dia ${i + 1}</b><span>${i < idx ? '✔' : '+' + r}</span>
+    </div>`).join('');
+  openDialog(`
+    <h2>🔥 Sequência diária</h2>
+    <p>Volte todo dia e a recompensa cresce. Você está no <b>dia ${n}</b>!</p>
+    <div class="stk-grid">${cells}</div>
+    <div class="btns"><button class="gold" id="stkClaim">Resgatar +${STREAK_R[idx]} 🪙</button></div>`);
+  $('stkClaim').onclick = () => {
+    const r = $('stkClaim').getBoundingClientRect();
+    localStorage.setItem('trucada_streakday', today);
+    localStorage.setItem('trucada_streakn', n);
+    store.coins = store.coins + STREAK_R[idx];
+    track('streak_claim');
+    closeDialog();
+    renderMenu();
+    flyCoins(r, 6);
+  };
+}
+
+/* ══════════ trilha de troféus (Trophy Road) ══════════ */
+
+function roadMilestones() {
+  // denso como no CR: recompensa a cada 50 🏆, arenas como grandes marcos
+  const list = [];
+  for (let i = 1; i < ARENAS.length; i++) {
+    const prev = ARENAS[i - 1], cur = ARENAS[i];
+    for (let tr = prev.min + 50; tr < cur.min; tr += 50) {
+      list.push({ tr, coins: 25 + 5 * i });
+    }
+    list.push({ tr: cur.min, coins: 250, arena: cur });
+  }
+  return list;
+}
+
+function roadClaimable() {
+  const claimed = store.claimedRoad;
+  return roadMilestones().some(ms => store.trophies >= ms.tr && !claimed.includes(ms.tr));
+}
+
+function nextRoadReward() {
+  return roadMilestones().find(ms => ms.tr > store.trophies);
+}
+
+const playerLevel = () => 1 + Math.floor((store.wins + store.losses) / 8);
+
+function arenaOf(trophies) {
+  let a = ARENAS[0];
+  for (const arena of ARENAS) if (trophies >= arena.min) a = arena;
+  return a;
+}
+const arenaNumberOf = trophies => ARENAS.indexOf(arenaOf(trophies)) + 1;
+
+function applyTrophies(won) {
+  const before = store.trophies;
+  let after = won ? before + 30 : before - 20;
+  after = Math.max(after, store.floor, 0);
+  store.trophies = after;
+  const arena = arenaOf(after);
+  if (arena.min > store.floor) store.floor = arena.min; // piso trava ao subir
+  return { before, after, delta: after - before, arena };
+}
+
+function applyMatchRewards(won) {
+  const t = applyTrophies(won);
+  const coins = won ? 25 + 5 * arenaNumberOf(t.after) : 8;
+  store.coins = store.coins + coins;
+  if (won) store.wins = store.wins + 1; else store.losses = store.losses + 1;
+  missionEvent('game');
+  if (won) missionEvent('win');
+  return { t, coins };
+}
+
+/* ══════════ personagens (conteúdo desbloqueável) ══════════ */
+
+const CHARACTERS = [
+  { id: 'zeca', name: 'Zeca', unlock: { type: 'free' },
+    look: { bg: '#2E86C1', skin: '#E8B98A', hair: '#26221E', hairStyle: 'short', eyes: 'sunglasses', mouth: 'grin', facial: 'none', hat: 'none', shirt: '#B03A2E', extra: null },
+    truco: ['Truco, e não volto atrás!', 'Segura o tranco!'],
+    accept: ['Tô dentro!', 'Bora ver quem pode mais.'],
+    run: ['Hoje não…', 'Recuar também é arte.'],
+    winVaza: ['Boa demais!', 'É nóis!'],
+    loseVaza: ['Eita…', 'Foi por pouco.'] },
+  { id: 'tiao', name: 'Tião do Sítio', unlock: { type: 'free' },
+    look: { bg: '#27AE60', skin: '#C68950', hair: '#3A2B1A', hairStyle: 'sides', eyes: 'open', mouth: 'grin', facial: 'none', hat: 'straw', shirt: '#5B2C6F', extra: null },
+    truco: ['Segura essa, parceiro!', 'Lá vem coisa boa!'],
+    accept: ['Aceito, mostra o jogo!', 'Bora, tô dentro!'],
+    run: ['Xô… essa não dá.', 'Corri, mas eu volto!'],
+    winVaza: ['Essa é minha!', 'Toma-lhe!'],
+    loseVaza: ['Arre égua…', 'Boa, boa…'] },
+  { id: 'cida', name: 'Dona Cida', unlock: { type: 'arena', n: 2 },
+    look: { bg: '#9B59B6', skin: '#F0C8A0', hair: '#D5D8DC', hairStyle: 'bun', eyes: 'glasses', mouth: 'smile', facial: 'none', hat: 'none', shirt: '#943126', extra: 'earrings' },
+    truco: ['Truco, meu filho!', 'Vou te ensinar a jogar!'],
+    accept: ['Pode vir, benzinho.', 'Aceito, uai.'],
+    run: ['Deus me livre dessa mão.', 'Corro, corro!'],
+    winVaza: ['A vovó agradece!', 'Há-há!'],
+    loseVaza: ['Ai, meu Deus…', 'Sorte sua.'] },
+  { id: 'chico', name: 'Seu Chico', unlock: { type: 'arena', n: 3 },
+    look: { bg: '#CA6F1E', skin: '#D9A066', hair: '#3A2B1A', hairStyle: 'short', eyes: 'open', stern: true, mouth: 'smile', facial: 'beard', facialColor: '#4A3222', hat: 'none', shirt: '#145A32', extra: null },
+    truco: ['TRUCO! E não treme!', 'Vem que tem!'],
+    accept: ['Tô dentro.', 'Manda ver.'],
+    run: ['Hoje não…', 'Deixa pra próxima.'],
+    winVaza: ['É disso que eu gosto!', 'Papel passado!'],
+    loseVaza: ['Arre…', 'Foi de raspão.'] },
+  { id: 'malandro', name: 'Malandro', unlock: { type: 'arena', n: 4 },
+    look: { bg: '#C0392B', skin: '#E0AC69', hair: '#1B1B1B', hairStyle: 'slick', eyes: 'open', mouth: 'smirk', facial: 'mustache', facialColor: '#1B1B1B', hat: 'panama', shirt: '#1B2631', extra: null },
+    truco: ['Truco! Coragem ou corre?', 'Cai na minha!'],
+    accept: ['Aceito, patinho.', 'Agora dançou.'],
+    run: ['Recuo estratégico…', 'Hoje o bicho tá bravo.'],
+    winVaza: ['Malandragem pura!', 'Levou, né?'],
+    loseVaza: ['Calma que eu volto.', 'Foi treino.'] },
+  { id: 'iara', name: 'Iara', unlock: { type: 'arena', n: 5 },
+    look: { bg: '#16A085', skin: '#D9A066', hair: '#0B5345', hairStyle: 'long', eyes: 'open', mouth: 'smile', facial: 'none', hat: 'none', shirt: '#2E86C1', extra: 'flower' },
+    truco: ['Truco das profundezas!', 'A maré virou!'],
+    accept: ['Mergulho de cabeça.', 'Aceito, marujo.'],
+    run: ['As águas não ajudam…', 'Volto com a maré.'],
+    winVaza: ['O mar levou!', 'Afundou!'],
+    loseVaza: ['Ondas traiçoeiras…', 'Boa pescaria.'] },
+  { id: 'coronel', name: 'Coronel', unlock: { type: 'arena', n: 6 },
+    look: { bg: '#7D6608', skin: '#E3B084', hair: '#BDBDBD', hairStyle: 'sides', eyes: 'open', stern: true, mouth: 'smile', facial: 'mustache', facialColor: '#C8C8C8', bigMustache: true, hat: 'farmer', shirt: '#3E4A24', extra: null },
+    truco: ['TRUCO, por ordem do Coronel!', 'Na minha fazenda mando eu!'],
+    accept: ['Aceito o desafio.', 'Palavra de Coronel.'],
+    run: ['Retirada tática.', 'Nem toda batalha vale a pena.'],
+    winVaza: ['Terra e vaza são minhas!', 'Como manda o figurino.'],
+    loseVaza: ['Insolência…', 'Ganhou a vaza, não a guerra.'] },
+  { id: 'cabra', name: 'Cabra da Peste', unlock: { type: 'compra', price: 600 },
+    look: { bg: '#A04000', skin: '#B07B4F', hair: '#2B1F14', hairStyle: 'sides', eyes: 'open', mouth: 'grin', facial: 'stubble', hat: 'leather', shirt: '#6E2C00', extra: null },
+    truco: ['TRUCO, cabra!', 'Vixe, agora danou-se!'],
+    accept: ['Pode vir quente!', 'Aceito no grito!'],
+    run: ['Oxente, essa não…', 'Corri mas foi por tática!'],
+    winVaza: ['Ave Maria, que jogada!', 'Danou-se, levei!'],
+    loseVaza: ['Vixe…', 'Foi sorte, visse?'] },
+  { id: 'doutor', name: 'O Doutor', unlock: { type: 'compra', price: 900 },
+    look: { bg: '#34495E', skin: '#F0C8A0', hair: '#5D5D5D', hairStyle: 'sides', eyes: 'monocle', mouth: 'smile', facial: 'mustache', facialColor: '#5D5D5D', hat: 'top', shirt: '#ECF0F1', extra: 'bowtie' },
+    truco: ['Truco. Cordialmente.', 'Elevemos a aposta, sim?'],
+    accept: ['Aceito, naturalmente.', 'Prossigamos.'],
+    run: ['Declino, desta vez.', 'Estrategicamente inviável.'],
+    winVaza: ['Elementar.', 'Conforme o cálculo.'],
+    loseVaza: ['Intrigante…', 'Nota mental: cautela.'] },
+];
+
+const charById = id => CHARACTERS.find(c => c.id === id) || CHARACTERS[0];
+
+/* retratos vetoriais — personagens de verdade, sem emoji */
+let svgSeq = 0;
+function avatarSVG(c, mood) {
+  const L = c.look;
+  const stern = L.stern || mood === 'angry';
+  const mouth = mood === 'happy' ? 'grin' : (mood === 'sad' || mood === 'angry') ? 'frown' : L.mouth;
+  const id = 'cp' + (++svgSeq);
+  const P = [];
+  P.push(`<circle cx="50" cy="50" r="50" fill="${L.bg}"/>`);
+  P.push(`<ellipse cx="50" cy="96" rx="54" ry="26" fill="rgba(0,0,0,.16)"/>`);
+  if (L.hairStyle === 'long') {
+    P.push(`<path d="M22 42 Q16 88 30 98 L70 98 Q84 88 78 42 Q76 18 50 18 Q24 18 22 42Z" fill="${L.hair}"/>`);
+  }
+  P.push(`<path d="M16 102 Q20 72 50 72 Q80 72 84 102Z" fill="${L.shirt}"/>`);
+  P.push(`<rect x="42" y="60" width="16" height="15" rx="6" fill="${L.skin}"/>`);
+  P.push(`<circle cx="25" cy="50" r="5.5" fill="${L.skin}"/><circle cx="75" cy="50" r="5.5" fill="${L.skin}"/>`);
+  P.push(`<ellipse cx="50" cy="48" rx="25" ry="27" fill="${L.skin}" stroke="rgba(0,0,0,.14)" stroke-width="1.4"/>`);
+  P.push(`<circle cx="38" cy="57" r="4" fill="rgba(214,106,89,.20)"/><circle cx="62" cy="57" r="4" fill="rgba(214,106,89,.20)"/>`);
+  if (L.hairStyle === 'short') P.push(`<path d="M25 46 Q23 19 50 18 Q77 19 75 46 Q72 28 50 28 Q28 28 25 46Z" fill="${L.hair}"/>`);
+  if (L.hairStyle === 'slick') P.push(`<path d="M26 42 Q26 21 50 20 Q74 21 74 42 Q68 29 50 29 Q32 29 26 42Z" fill="${L.hair}"/>`);
+  if (L.hairStyle === 'bun') P.push(`<circle cx="50" cy="15" r="9" fill="${L.hair}"/><path d="M25 45 Q23 20 50 19 Q77 20 75 45 Q72 28 50 28 Q28 28 25 45Z" fill="${L.hair}"/>`);
+  if (L.hairStyle === 'sides') P.push(`<path d="M25 54 Q22 36 32 30 L34 52Z" fill="${L.hair}"/><path d="M75 54 Q78 36 68 30 L66 52Z" fill="${L.hair}"/>`);
+  if (L.hairStyle === 'long') P.push(`<path d="M26 46 Q25 21 50 20 Q75 21 74 46 Q68 28 50 30 Q32 28 26 46Z" fill="${L.hair}"/>`);
+  if (L.facial === 'beard') P.push(`<path d="M26 48 Q27 77 50 79 Q73 77 74 48 L74 42 Q71 62 50 63 Q29 62 26 42Z" fill="${L.facialColor}"/>`);
+  if (L.facial === 'stubble') P.push(`<path d="M29 54 Q31 72 50 73 Q69 72 71 54 Q66 67 50 68 Q34 67 29 54Z" fill="rgba(0,0,0,.2)"/>`);
+  if (L.eyes === 'sunglasses') {
+    P.push(`<rect x="29" y="42" width="19" height="11" rx="5" fill="#1B1B1B"/><rect x="52" y="42" width="19" height="11" rx="5" fill="#1B1B1B"/><rect x="46" y="45" width="8" height="3" fill="#1B1B1B"/><rect x="22" y="44" width="8" height="3" fill="#1B1B1B"/><rect x="70" y="44" width="8" height="3" fill="#1B1B1B"/>`);
+  } else {
+    const by = mood === 'sad' ? 36 : stern ? 40 : 38;
+    P.push(`<path d="M35 42 Q40 ${by} 45 42" stroke="${L.hair}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`);
+    P.push(`<path d="M55 42 Q60 ${by} 65 42" stroke="${L.hair}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`);
+    P.push(`<circle cx="41" cy="49" r="4.4" fill="#FFF8EE"/><circle cx="59" cy="49" r="4.4" fill="#FFF8EE"/>`);
+    P.push(`<circle cx="41.6" cy="49.6" r="2.4" fill="#2B2B2B"/><circle cx="59.6" cy="49.6" r="2.4" fill="#2B2B2B"/>`);
+    P.push(`<circle cx="42.4" cy="48.6" r=".8" fill="#FFFFFF"/><circle cx="60.4" cy="48.6" r=".8" fill="#FFFFFF"/>`);
+    if (L.eyes === 'glasses') P.push(`<circle cx="41" cy="49" r="7.5" fill="none" stroke="#4A4A4A" stroke-width="2.2"/><circle cx="59" cy="49" r="7.5" fill="none" stroke="#4A4A4A" stroke-width="2.2"/><line x1="48.5" y1="49" x2="51.5" y2="49" stroke="#4A4A4A" stroke-width="2.2"/>`);
+    if (L.eyes === 'monocle') P.push(`<circle cx="59" cy="49" r="8" fill="none" stroke="#C9A227" stroke-width="2.2"/><line x1="61" y1="57" x2="63" y2="66" stroke="#C9A227" stroke-width="1.6"/>`);
+  }
+  P.push(`<path d="M49 52 q3.5 4 0 6.5" stroke="rgba(0,0,0,.28)" stroke-width="2" fill="none" stroke-linecap="round"/>`);
+  if (mouth === 'smile') P.push(`<path d="M42 64 Q50 70 58 64" stroke="#8C3B2E" stroke-width="2.6" fill="none" stroke-linecap="round"/>`);
+  if (mouth === 'grin') P.push(`<path d="M40 62 Q50 73 60 62 Q50 66 40 62Z" fill="#FFFFFF" stroke="#8C3B2E" stroke-width="1.6"/>`);
+  if (mouth === 'smirk') P.push(`<path d="M43 65 Q52 68 58 62" stroke="#8C3B2E" stroke-width="2.6" fill="none" stroke-linecap="round"/>`);
+  if (mouth === 'frown') P.push(`<path d="M42 68 Q50 60 58 68" stroke="#8C3B2E" stroke-width="2.6" fill="none" stroke-linecap="round"/>`);
+  if (L.facial === 'mustache') {
+    if (L.bigMustache) P.push(`<path d="M34 60 Q42 54 50 59 Q58 54 66 60 Q60 67 50 62 Q40 67 34 60Z" fill="${L.facialColor}"/>`);
+    else P.push(`<path d="M39 60 Q45 56 50 60 Q55 56 61 60 Q55 63 50 61 Q45 63 39 60Z" fill="${L.facialColor}"/>`);
+  }
+  if (L.hat === 'straw') P.push(`<path d="M33 29 Q34 12 50 12 Q66 12 67 29Z" fill="#EDCD6C"/><rect x="33" y="24" width="34" height="5" fill="#B03A2E"/><ellipse cx="50" cy="30" rx="32" ry="6.5" fill="#E5C158"/>`);
+  if (L.hat === 'panama') P.push(`<path d="M34 28 Q35 11 50 11 Q65 11 66 28Z" fill="#F2EFE6"/><rect x="34" y="23" width="32" height="5" fill="#2C2C2C"/><ellipse cx="50" cy="29" rx="28" ry="5.5" fill="#E8E4D8"/>`);
+  if (L.hat === 'top') P.push(`<rect x="35" y="3" width="30" height="25" rx="2" fill="#1E1E1E"/><rect x="35" y="21" width="30" height="6" fill="#7B1E1E"/><ellipse cx="50" cy="28" rx="24" ry="5" fill="#1E1E1E"/>`);
+  if (L.hat === 'leather') P.push(`<path d="M31 27 Q33 10 50 10 Q67 10 69 27Z" fill="#7A4E22"/><path d="M18 31 Q50 41 82 31 Q78 24 66 24 L34 24 Q22 24 18 31Z" fill="#6E4419"/><circle cx="50" cy="20" r="3" fill="#C9A227"/>`);
+  if (L.hat === 'farmer') P.push(`<path d="M34 29 Q35 13 50 13 Q65 13 66 29Z" fill="#5A612A"/><rect x="34" y="24" width="32" height="5" fill="#2E3317"/><ellipse cx="50" cy="30" rx="30" ry="6" fill="#4D5320"/>`);
+  if (L.extra === 'earrings') P.push(`<circle cx="25" cy="57" r="2.6" fill="#E9C46A"/><circle cx="75" cy="57" r="2.6" fill="#E9C46A"/>`);
+  if (L.extra === 'flower') P.push(`<g>${[0, 72, 144, 216, 288].map(a => `<circle cx="${(73 + 4.5 * Math.cos(a * Math.PI / 180)).toFixed(1)}" cy="${(27 + 4.5 * Math.sin(a * Math.PI / 180)).toFixed(1)}" r="3.2" fill="#F1948A"/>`).join('')}<circle cx="73" cy="27" r="2.6" fill="#F7DC6F"/></g>`);
+  if (L.extra === 'bowtie') P.push(`<path d="M50 76 L38 70 L38 83Z" fill="#8E2323"/><path d="M50 76 L62 70 L62 83Z" fill="#8E2323"/><circle cx="50" cy="76" r="3.2" fill="#B03A3A"/>`);
+  return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${c.name}"><defs><clipPath id="${id}"><circle cx="50" cy="50" r="50"/></clipPath></defs><g clip-path="url(#${id})">${P.join('')}</g></svg>`;
+}
+
+/* skins de baralho (verso das cartas) */
+const DECK_SKINS = [
+  { id: 'classico', name: 'Clássico', price: 0, c1: '#7D2B24', c2: '#6E241E', border: '#F6EFDD' },
+  { id: 'azulejo', name: 'Azulejo', price: 250, c1: '#1F5FA8', c2: '#174A85', border: '#EAF2FA' },
+  { id: 'praia', name: 'Praia', price: 350, c1: '#0E8C7F', c2: '#0B7266', border: '#F8F3D9' },
+  { id: 'dourado', name: 'Dourado', price: 500, c1: '#3A3A3A', c2: '#2B2B2B', border: '#E0A93E' },
+];
+function skinById(id) { return DECK_SKINS.find(s => s.id === id) || DECK_SKINS[0]; }
+
+function deckPrevHTML(skin) {
+  return `<div class="deck-prev" style="background:repeating-linear-gradient(45deg, ${skin.c1} 0 5px, ${skin.c2} 5px 10px); border-color:${skin.border}"></div>`;
+}
+
+/* skins de mesa (feltro) */
+const TABLE_SKINS = [
+  { id: 'verde', name: 'Feltro Verde', price: 0, felt: '#1E6151', deep: 'rgba(10, 44, 33, .35)', border: 'rgba(92, 58, 33, .85)' },
+  { id: 'azul', name: 'Feltro Azul', price: 400, felt: '#1D5A8C', deep: 'rgba(9, 32, 54, .45)', border: 'rgba(92, 58, 33, .85)' },
+  { id: 'vinho', name: 'Feltro Vinho', price: 500, felt: '#7A2635', deep: 'rgba(52, 12, 20, .45)', border: 'rgba(60, 34, 16, .9)' },
+  { id: 'roxa', name: 'Mesa Roxa', price: 600, felt: '#5B2C6F', deep: 'rgba(40, 16, 52, .5)', border: 'rgba(224, 169, 62, .55)' },
+];
+function tableSkinById(id) { return TABLE_SKINS.find(s => s.id === id) || TABLE_SKINS[0]; }
+
+function tablePrevHTML(s) {
+  return `<div class="table-prev" style="background: radial-gradient(ellipse at 50% 40%, ${s.felt} 0%, ${s.deep} 90%); border-color:${s.border}"></div>`;
+}
+
+function applyTableSkin() {
+  const s = tableSkinById(store.tableSkin);
+  const t = $('tableArea');
+  t.style.background =
+    `radial-gradient(ellipse at 50% 45%, ${s.felt} 0%, rgba(0,0,0,0) 75%), ${s.deep}`;
+  t.style.borderColor = s.border;
+}
+
+/* falas avulsas compráveis — cada uma entra no seu painel 💬 */
+const FALAS_SHOP = [
+  { id: 'f_marreco', text: 'Truco marreco!', price: 80 },
+  { id: 'f_desce', text: 'Desce mais uma e TRUCO!', price: 80 },
+  { id: 'f_borahj', text: 'Bora que hoje tem!', price: 50 },
+  { id: 'f_pago', text: 'Pago o próximo, foi mal.', price: 50 },
+  { id: 'f_rodada', text: 'Paga a rodada!', price: 60 },
+  { id: 'f_garcom', text: 'Garçom, anota!', price: 60 },
+  { id: 'f_copo', text: 'O copo tava vazio…', price: 40 },
+  { id: 'f_visse', text: 'TRUCO, visse!', price: 80 },
+  { id: 'f_arrocha', text: 'Arrocha o nó!', price: 70 },
+  { id: 'f_simbora', text: 'Simbora!', price: 40 },
+  { id: 'f_vixe', text: 'Vixe, hoje não.', price: 40 },
+  { id: 'f_arretado', text: 'Arretado demais!', price: 70 },
+  { id: 'f_oxente', text: 'Oxente, levei!', price: 70 },
+  { id: 'f_lasqueira', text: 'Eita lasqueira…', price: 40 },
+  { id: 'f_chora', text: 'Chora, bebê!', price: 120 },
+  { id: 'f_mesa', text: 'Essa mesa é minha!', price: 100 },
+  { id: 'f_zap', text: 'Tô com o zap na manga 😏', price: 150 },
+  { id: 'f_nemdoeu', text: 'Nem doeu.', price: 100 },
+];
+
+/* falas disponíveis no painel 💬: as do personagem + as avulsas compradas */
+function playerFalas() {
+  const base = charById(store.charId);
+  const own = store.ownedFalas
+    .map(id => (FALAS_SHOP.find(f => f.id === id) || {}).text)
+    .filter(Boolean);
+  return [...new Set([
+    ...['truco', 'accept', 'run', 'winVaza', 'loseVaza'].flatMap(k => base[k]),
+    ...own,
+  ])];
+}
+
+function isUnlocked(c) {
+  if (c.unlock.type === 'free') return true;
+  if (c.unlock.type === 'arena') return arenaNumberOf(store.floor) >= c.unlock.n;
+  return store.ownedChars.includes(c.id); // compra
+}
+
+function charStatus(c) {
+  if (c.id === store.charId) return '✔ Escolhido';
+  if (isUnlocked(c)) return 'Toque para escolher';
+  if (c.unlock.type === 'arena') return `🔒 Arena ${c.unlock.n}`;
+  return `🛒 ${c.unlock.price} 🪙<br>na Loja`;
+}
+
+/* ══════════ estado da partida ══════════ */
+
+// Jogadores: você = 0. 1v1: rival = 1. 2v2: 1 e 3 = rivais, 2 = parceiro.
+// Times: time do jogador p = p % 2. Seu time é o 0.
+let g = null;
+let busy = false;
+let mode = 1; // 1 = 1v1, 2 = 2v2
+let animPlay = null;  // { p } — carta recém-jogada a animar no próximo render
+let dealAnim = false; // anima a distribuição da mão no próximo render
+let coverArmed = false; // próximo toque em carta joga encoberta
+let matchRules = { ferro: true, encoberta: true, friendly: false, event: null, target: 12, startValue: 1, blind: false, palhacos: false, melaRule: 'oficial', quedas: false };
+const roomCfg = { code: null, mode: 1, ferro: true, encoberta: true, palhacos: false, melaRule: 'oficial', quedas: false };
+let roomSeries = null; // placar da série "melhor de 3 quedas"
+
+const numPlayers = () => mode === 1 ? 2 : 4;
+const teamOf = p => p % 2;
+const nextPlayer = p => (p + 1) % numPlayers();
+
+function startGame(m, opts = {}) {
+  mode = m;
+  matchRules = {
+    ferro: opts.ferro !== undefined ? opts.ferro : true,
+    encoberta: opts.encoberta !== undefined ? opts.encoberta : true,
+    friendly: !!opts.friendly,
+    event: opts.event || null,
+    target: opts.target || TARGET,
+    startValue: opts.startValue || 1,
+    blind: !!opts.blind,
+    palhacos: !!opts.palhacos,
+    melaRule: opts.melaRule || 'oficial',
+    quedas: !!opts.quedas,
+  };
+  $('gameView').classList.toggle('fast', store.fast);
+  $('btnSpeed').classList.toggle('on', store.fast);
+  $('menuView').hidden = true;
+  $('gameView').hidden = false;
+  $('slots').className = 'mode' + mode;
+  $('scoreLabelA').textContent = mode === 1 ? 'Você' : 'Nós';
+  $('scoreLabelB').textContent = mode === 1 ? 'Ele' : 'Eles';
+  applyTableSkin();
+  newMatch();
+  track(matchRules.friendly ? 'match_friendly' : 'match_start');
+  coach('start', 'Bem-vindo ao truco paulista! Vence quem fizer <b>12 pontos</b>; cada mão tem até 3 vazas.');
+  coach('vira', 'A carta inclinada no centro é a <b>vira</b>: a manilha é o valor seguinte a ela e vence tudo (♦ &lt; ♠ &lt; ♥ &lt; ♣).');
+}
+
+function showMenu() {
+  g = null; // invalida timers pendentes
+  stopTurnTimer();
+  closeDialog();
+  $('endView').hidden = true;
+  $('gameView').hidden = true;
+  $('menuView').hidden = false;
+  switchTab('battle');
+}
+
+function newMatch() {
+  // personagens: você + bots distintos sorteados
+  const me = charById(store.charId);
+  const pool = CHARACTERS.filter(c => c.id !== me.id);
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  const chars = mode === 1 ? [me, pool[0]] : [me, pool[0], pool[1], pool[2]];
+
+  g = {
+    chars,
+    scores: [0, 0],       // por TIME
+    dealer: numPlayers() - 1,
+    handNum: -1,
+    finished: false,
+    winner: null,         // time vencedor
+    target: matchRules.target || TARGET,
+  };
+  buildSeats();
+  $('youFace').innerHTML = avatarSVG(me);
+  nextHand();
+}
+
+function nextHand(redeal = false) {
+  busy = false;
+  dealAnim = true;
+  g.handNum++;
+  if (!redeal) g.dealer = nextPlayer(g.dealer); // mesa nova: quem deu, dá de novo
+  const N = numPlayers();
+  sfx('deal');
+  const deck = fullDeck();
+  for (let i = deck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
+  g.hands = [];
+  for (let p = 0; p < N; p++) g.hands.push(deck.slice(p * 3, p * 3 + 3));
+  g.vira = deck[N * 3];
+  g.table = Array(N).fill(null);
+  g.tableFaceDown = Array(N).fill(false);
+  coverArmed = false;
+  g.roundWinners = [];
+  g.vazaLog = [];
+  g.leader = nextPlayer(g.dealer);
+  g.maoP = g.leader;    // "mão" abre a rodada; o dealer é o "pé"
+  g.turn = g.leader;
+  g.handValue = matchRules.startValue || 1;
+  g.pendingValue = null;
+  g.callerTeam = null;
+  g.callerP = null;
+  g.responderTeam = null;
+  g.raiseRightTeam = null;
+
+  const t0Onze = g.scores[0] === g.target - 1;
+  const t1Onze = g.scores[1] === g.target - 1;
+  g.isFerro = matchRules.blind || (t0Onze && t1Onze && matchRules.ferro);
+  g.isOnze = !g.isFerro && (t0Onze !== t1Onze);
+  g.onzeTeam = g.isOnze ? (t0Onze ? 0 : 1) : null;
+  g.phase = g.isOnze ? 'onze' : 'playing';
+
+  // regra de bar "três palhaços": Q+J+K na mão dá direito a pedir mesa nova
+  const FIG = { Q: 1, J: 1, K: 1 };
+  g.canPalhacos = (matchRules.palhacos && !g.isFerro && !g.isOnze)
+    ? g.hands.map(h => h.every(c => FIG[c.r]))
+    : Array(N).fill(false);
+
+  render();
+  if (g.isOnze && g.onzeTeam === 0) {
+    showOnzeDialog();
+  } else if (g.isOnze && g.onzeTeam === 1) {
+    schedule(() => botDecideOnze(), 1000);
+  } else {
+    if (g.isFerro) announce(matchRules.blind ? 'MESA CEGA — às escuras!' : 'MÃO DE FERRO — às escuras!', 'bad');
+    const botP = g.canPalhacos.findIndex((v, p) => v && p !== 0);
+    if (botP > 0) {
+      const hn = g.handNum;
+      schedule(() => {
+        if (g.handNum !== hn || g.roundWinners.length || g.table.some(Boolean)) return;
+        say(botP, 'Três palhaços!');
+        announce('Três palhaços — mesa nova!');
+        sfx('deal');
+        schedule(() => { if (g.handNum === hn) nextHand(true); }, 1000);
+      }, 700);
+      return; // bot vai pedir mesa nova — segura a jogada
+    }
+    afterMove();
+  }
+}
+
+function canHumanTruco() {
+  return g && !g.finished && g.phase === 'playing' && g.turn === 0 &&
+    g.handValue < 12 && !g.isOnze && !g.isFerro &&
+    (g.raiseRightTeam === null || g.raiseRightTeam === 0);
+}
+
+/* ── ações ── */
+
+function playCard(p, idx, faceDown = false) {
+  if (faceDown && (g.roundWinners.length === 0 || g.isFerro || !matchRules.encoberta)) faceDown = false; // proibida na 1ª vaza
+  const card = g.hands[p].splice(idx, 1)[0];
+  g.table[p] = card;
+  g.tableFaceDown[p] = faceDown;
+  if (p === 0 && !faceDown && isManilha(card, g.vira.r)) { missionEvent('manilha'); bumpStat('manilhas'); }
+  animPlay = { p };
+  sfx('card');
+  if (p === 0) buzz(12);
+  const N = numPlayers();
+
+  if (g.table.some(c => c === null)) {
+    g.turn = nextPlayer(p);
+    render();
+    afterMove();
+    return;
+  }
+
+  // vaza completa — carta encoberta não tem valor (força -1)
+  const strengths = g.table.map((c, q) => g.tableFaceDown[q] ? -1 : strength(c, g.vira.r));
+  const max = Math.max(...strengths);
+  const teamsAtMax = new Set();
+  for (let q = 0; q < N; q++) if (strengths[q] === max) teamsAtMax.add(teamOf(q));
+  const winnerTeam = teamsAtMax.size > 1 ? null : [...teamsAtMax][0];
+  g.roundWinners.push(winnerTeam);
+  g.vazaLog.push({ plays: g.table.map((c, q) => ({ q, c, fd: g.tableFaceDown[q] })), winner: winnerTeam });
+
+  // quem abre a próxima: dono da maior carta do time vencedor (ordem de jogo)
+  let nextLeader = g.leader; // empate: quem abriu a vaza empatada abre de novo
+  if (winnerTeam !== null) {
+    let q = g.leader;
+    for (let k = 0; k < N; k++) {
+      if (strengths[q] === max && teamOf(q) === winnerTeam) { nextLeader = q; break; }
+      q = nextPlayer(q);
+    }
+  }
+  render();
+
+  if (winnerTeam === null) {
+    announce('Vaza empatada!');
+  } else if (winnerTeam === 0) {
+    announce('Vaza nossa!', 'good');
+    sfx('winVaza');
+    missionEvent('vaza');
+    bumpStat('vazas');
+    reactAll(0);
+    coach('vaza', 'Quem ganha <b>2 das 3 vazas</b> leva a mão. Empatou a vaza? Vale a regra do desempate — o motor cuida disso.');
+    if (mode === 2 && Math.random() < 0.4) sayFrom(rand([1, 3]), 'loseVaza');
+  } else {
+    announce('Eles levaram a vaza', 'bad');
+    sfx('loseVaza');
+    reactAll(1);
+    sayFrom(mode === 1 ? 1 : rand([1, 3]), 'winVaza');
+  }
+
+  schedule(() => {
+    const outcome = resolveHand(g.roundWinners);
+    if (outcome.finished) {
+      if (outcome.winner === null && matchRules.melaRule === 'torna') {
+        announce('Melou as três — torna!');
+        schedule(() => nextHand(true), 1300);
+      } else if (outcome.winner === null && (matchRules.melaRule === 'mao' || matchRules.melaRule === 'pe')) {
+        const lucky = teamOf(matchRules.melaRule === 'mao' ? g.maoP : g.dealer);
+        const who = matchRules.melaRule === 'mao' ? 'quem é mão' : 'quem deu';
+        announce(`Melou as três — leva ${who}: ${lucky === 0 ? 'nós!' : 'eles'}`, lucky === 0 ? 'good' : 'bad');
+        endHand(lucky, g.handValue);
+      } else {
+        endHand(outcome.winner, outcome.winner === null ? 0 : g.handValue);
+      }
+    } else {
+      g.leader = nextLeader;
+      g.turn = nextLeader;
+      g.table = Array(N).fill(null);
+      g.tableFaceDown = Array(N).fill(false);
+      render();
+      afterMove();
+    }
+  }, 1400);
+}
+
+function callTruco(p) {
+  const base = g.phase === 'awaiting' ? g.pendingValue : g.handValue;
+  if (g.phase === 'awaiting') g.handValue = g.pendingValue; // re-aumento aceita o pendente
+  g.pendingValue = LADDER[base];
+  g.callerTeam = teamOf(p);
+  g.callerP = p;
+  g.responderTeam = 1 - g.callerTeam;
+  g.phase = 'awaiting';
+  slamStamp(CALL_NAME[g.pendingValue]);
+  sfx('truco');
+  buzz([70, 40, 70]);
+  if (p !== 0) say(p, rand(g.chars[p].truco)); // suas falas são manuais (💬)
+  else {
+    missionEvent('truco');
+    track('truco');
+    bumpStat('trucos');
+    for (let q = 1; q < numPlayers(); q++) if (teamOf(q) === 1) react(q, 'angry');
+  }
+  coach('truco', '<b>TRUCO!</b> aumenta a mão para 3 pontos. Quem recebe pode aceitar, correr (entrega o valor anterior) ou aumentar: 6, 9, 12.');
+  render();
+  if (g.responderTeam === 1) schedule(botRespondTruco, 1200);
+  else schedule(showTrucoDialog, 1000);
+}
+
+function acceptTruco(p) {
+  if (p === 0) bumpStat('trucosAceitos');
+  g.handValue = g.pendingValue;
+  g.pendingValue = null;
+  g.raiseRightTeam = teamOf(p);
+  g.callerTeam = null;
+  g.responderTeam = null;
+  g.phase = 'playing';
+  if (p !== 0) say(p, rand(g.chars[p].accept));
+  render();
+  announce('Valendo ' + g.handValue + '!');
+  afterMove();
+}
+
+function runFromTruco(p) {
+  const points = g.handValue; // valor ANTERIOR à proposta
+  const runnerTeam = teamOf(p);
+  if (p !== 0) say(p, rand(g.chars[p].run));
+  announce(runnerTeam === 0 ? 'Vocês correram…' : 'Eles correram!', runnerTeam === 0 ? 'bad' : 'good');
+  endHand(1 - runnerTeam, points);
+}
+
+function decideOnze(team, accepted, byP) {
+  if (accepted) {
+    g.handValue = 3;
+    g.phase = 'playing';
+    render();
+    announce('Mão de onze aceita — vale 3!');
+    if (byP !== 0) say(byP, rand(g.chars[byP].accept));
+    afterMove();
+  } else {
+    if (byP !== 0) say(byP, rand(g.chars[byP].run));
+    endHand(1 - team, 1);
+  }
+}
+
+function endHand(winnerTeam, points) {
+  if (winnerTeam !== null) g.scores[winnerTeam] += points;
+  if (winnerTeam === 0 && !matchRules.friendly) store.crowns = store.crowns + 1; // 👑 do passe
+  if (winnerTeam === 0 && g.isFerro && !matchRules.blind) bumpStat('ferroWins');
+  render();
+  if (winnerTeam !== null && g.scores[winnerTeam] >= g.target) {
+    g.finished = true;
+    g.winner = winnerTeam;
+    schedule(() => showMatchEnd(winnerTeam), 1100);
+    return;
+  }
+  const msg = winnerTeam === null ? 'Mão nula — ninguém pontua'
+    : winnerTeam === 0 ? `+${points} para nós!` : `+${points} para eles`;
+  schedule(() => announce(msg, winnerTeam === null ? '' : winnerTeam === 0 ? 'good' : 'bad'), 800);
+  schedule(nextHand, 2300);
+}
+
+function afterMove() {
+  if (!g || g.finished) return;
+  if (g.phase === 'playing' && g.turn !== 0) {
+    busy = true;
+    schedule(() => botPlay(g.turn), 950);
+  } else {
+    busy = false;
+    render();
+  }
+}
+
+/* ══════════ bots ══════════ */
+
+function handStrengthOf(cards, viraR) {
+  if (!cards.length) return 0;
+  const vals = cards.map(c => {
+    const s = strength(c, viraR);
+    return s >= 100 ? (0.85 + 0.05 * (s - 100)) : s / 11;
+  });
+  const best = Math.max(...vals);
+  const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+  return 0.6 * best + 0.4 * avg;
+}
+
+function teamBestStrength(team) {
+  const players = [];
+  for (let p = 0; p < numPlayers(); p++) if (teamOf(p) === team && p !== 0) players.push(p);
+  return Math.max(...players.map(p => handStrengthOf(g.hands[p], g.vira.r)), 0);
+}
+
+/* dificuldade por arena: bots das primeiras arenas erram e não blefam;
+   nas altas, blefam truco e jogam certeiro */
+function botProfile() {
+  const k = (matchRules.friendly && !matchRules.event)
+    ? 0.5
+    : (arenaNumberOf(store.trophies) - 1) / (ARENAS.length - 1);
+  return {
+    mistake: 0.30 - 0.27 * k,   // 30% de erro na Arena 1 → 3% na 9
+    bluff: 0.02 + 0.13 * k,     // blefe de truco: 2% → 15%
+    accept: 0.48 - 0.10 * k,    // mão mínima para aceitar truco
+    raise: 0.30 + 0.40 * k,     // chance de re-aumentar com mão forte
+    onze: 0.46 - 0.08 * k,      // critério na mão de onze
+  };
+}
+
+function botDecideOnze() {
+  if (!g) return;
+  busy = true;
+  const rep = mode === 1 ? 1 : (handStrengthOf(g.hands[1], g.vira.r) >= handStrengthOf(g.hands[3], g.vira.r) ? 1 : 3);
+  decideOnze(1, handStrengthOf(g.hands[rep], g.vira.r) >= botProfile().onze, rep);
+}
+
+function botRespondTruco() {
+  if (!g || g.phase !== 'awaiting' || g.responderTeam !== 1) return;
+  busy = true;
+  const prof = botProfile();
+  const rep = mode === 1 ? 1 : (handStrengthOf(g.hands[1], g.vira.r) >= handStrengthOf(g.hands[3], g.vira.r) ? 1 : 3);
+  const st = handStrengthOf(g.hands[rep], g.vira.r);
+  const winning = g.roundWinners.filter(w => w === 1).length >
+                  g.roundWinners.filter(w => w === 0).length;
+  const eff = st + (winning ? 0.12 : 0);
+  if (eff >= 0.72 && g.pendingValue < 12 && Math.random() < prof.raise) callTruco(rep);
+  else if (eff >= prof.accept) acceptTruco(rep);
+  else if (g.pendingValue < 12 && Math.random() < prof.bluff) callTruco(rep); // blefe: re-aumenta sem mão
+  else runFromTruco(rep);
+}
+
+function botPlay(p) {
+  if (!g || g.finished || g.phase !== 'playing' || g.turn !== p || p === 0) return;
+  busy = true;
+  const prof = botProfile();
+
+  // pedir truco?
+  const st = handStrengthOf(g.hands[p], g.vira.r);
+  const myTeam = teamOf(p);
+  const canCall = g.handValue < 12 && !g.isOnze && !g.isFerro &&
+    (g.raiseRightTeam === null || g.raiseRightTeam === myTeam);
+  const wonFirst = g.roundWinners[0] === myTeam;
+  if (canCall) {
+    const shy = myTeam === 0 ? 0.15 : 0; // parceiro truca menos
+    const urge = st + (wonFirst ? 0.15 : 0) - 0.6 - shy;
+    const bluff = Math.random() < prof.bluff * (myTeam === 0 ? 0.3 : 1);
+    if ((urge > 0 && Math.random() < urge + 0.25) || bluff) {
+      callTruco(p);
+      return;
+    }
+  }
+
+  // escolher carta
+  const hand = g.hands[p];
+  let idx = 0;
+  const mistake = Math.random() < prof.mistake;
+  // bot não enxerga o valor de carta encoberta alheia (força -1)
+  const played = g.table.map((c, q) => c ? { q, s: g.tableFaceDown[q] ? -1 : strength(c, g.vira.r) } : null).filter(Boolean);
+  const bestOnTable = played.length ? Math.max(...played.map(x => x.s)) : -1;
+  const bestIsMyTeam = played.length &&
+    played.some(x => x.s === bestOnTable && teamOf(x.q) === myTeam) &&
+    !played.some(x => x.s === bestOnTable && teamOf(x.q) !== myTeam);
+  const opponentsToPlay = (() => {
+    let q = g.turn, n = 0;
+    for (let k = 0; k < numPlayers(); k++) {
+      if (g.table[q] === null && teamOf(q) !== myTeam) n++;
+      q = nextPlayer(q);
+    }
+    return n;
+  })();
+
+  if (mistake || g.isFerro) {
+    idx = Math.floor(Math.random() * hand.length);
+  } else if (bestIsMyTeam && opponentsToPlay === 0) {
+    // time já garantiu a vaza: descarta a mais fraca — encoberta se permitido
+    idx = weakestIdx(hand);
+    if (g.roundWinners.length >= 1 && !g.isFerro && matchRules.encoberta) {
+      playCard(p, idx, true);
+      return;
+    }
+  } else if (played.length) {
+    // menor carta que vence a mesa; senão, a mais fraca
+    let bestWin = -1;
+    hand.forEach((c, i) => {
+      const s = strength(c, g.vira.r);
+      if (s > bestOnTable && (bestWin === -1 || s < strength(hand[bestWin], g.vira.r))) bestWin = i;
+    });
+    idx = bestWin !== -1 ? bestWin : weakestIdx(hand);
+  } else {
+    // abrindo a vaza
+    let strongest = 0, strongestNonM = -1;
+    hand.forEach((c, i) => {
+      if (strength(c, g.vira.r) > strength(hand[strongest], g.vira.r)) strongest = i;
+      if (!isManilha(c, g.vira.r) &&
+          (strongestNonM === -1 || strength(c, g.vira.r) > strength(hand[strongestNonM], g.vira.r))) {
+        strongestNonM = i;
+      }
+    });
+    idx = (wonFirst && strongestNonM !== -1) ? strongestNonM : strongest;
+  }
+  playCard(p, idx);
+}
+
+function weakestIdx(hand) {
+  let w = 0;
+  hand.forEach((c, i) => {
+    if (strength(c, g.vira.r) < strength(hand[w], g.vira.r)) w = i;
+  });
+  return w;
+}
+
+/* ══════════ UI ══════════ */
+
+const $ = id => document.getElementById(id);
+const rand = arr => arr[Math.floor(Math.random() * arr.length)];
+
+let timers = [];
+function schedule(fn, ms) {
+  const matchAtSchedule = g;
+  timers.push(setTimeout(() => { if (g && g === matchAtSchedule) fn(); }, store.fast ? Math.round(ms * 0.55) : ms));
+}
+
+/* reações dos retratos (careta ao perder vaza, raiva no truco…) */
+const reactTimers = {};
+function react(p, mood) {
+  const av = $('av' + p);
+  if (!av || !g) return;
+  const face = av.querySelector('.face');
+  if (!face) return;
+  face.innerHTML = avatarSVG(g.chars[p], mood);
+  clearTimeout(reactTimers[p]);
+  const match = g;
+  reactTimers[p] = setTimeout(() => {
+    if (g === match && face.isConnected) face.innerHTML = avatarSVG(g.chars[p]);
+  }, 1700);
+}
+function reactAll(winnerTeam) {
+  for (let p = 1; p < numPlayers(); p++) react(p, teamOf(p) === winnerTeam ? 'happy' : 'sad');
+}
+
+const bubbleTimers = {};
+function say(p, text) {
+  const el = p === 0 ? $('bubYou') : $('bub' + p);
+  if (!el) return;
+  el.textContent = text;
+  el.classList.add('show');
+  clearTimeout(bubbleTimers[p]);
+  bubbleTimers[p] = setTimeout(() => el.classList.remove('show'), 2000);
+}
+function sayFrom(p, key) { say(p, rand(g.chars[p][key])); }
+
+function announce(text, kind) {
+  const a = $('announce');
+  a.textContent = text;
+  a.className = kind || '';
+  void a.offsetWidth;
+  a.classList.add('show');
+}
+
+function slamStamp(text) {
+  const s = $('stamp');
+  s.textContent = text;
+  s.classList.remove('slam');
+  void s.offsetWidth;
+  s.classList.add('slam');
+}
+
+/* moedas voando até o contador do topo (juice de resgate) */
+function flyCoins(from, n = 6) {
+  const f = from.getBoundingClientRect ? from.getBoundingClientRect() : from;
+  const toEl = $('mCoins');
+  if (!toEl) return;
+  const t = toEl.getBoundingClientRect();
+  sfx('coin');
+  for (let i = 0; i < n; i++) {
+    const c = document.createElement('div');
+    c.className = 'fly-coin';
+    c.textContent = '🪙';
+    c.style.left = (f.left + f.width / 2 - 9) + 'px';
+    c.style.top = (f.top + f.height / 2 - 9) + 'px';
+    document.body.appendChild(c);
+    const dx = t.left + t.width / 2 - (f.left + f.width / 2);
+    const dy = t.top + t.height / 2 - (f.top + f.height / 2);
+    const anim = c.animate([
+      { transform: `translate(${Math.round(Math.random() * 44 - 22)}px, ${Math.round(Math.random() * 30 - 15)}px) scale(1.1)`, opacity: 1 },
+      { transform: `translate(${dx}px, ${dy}px) scale(.5)`, opacity: .85 },
+    ], { duration: 500 + Math.random() * 250, delay: i * 55, easing: 'cubic-bezier(.45,-.15,.7,1)', fill: 'forwards' });
+    anim.onfinish = () => c.remove();
+  }
+  setTimeout(() => {
+    sfx('coin');
+    const cur = toEl.closest('.cur');
+    if (cur) { cur.classList.remove('bump'); void cur.offsetWidth; cur.classList.add('bump'); }
+  }, 700);
+}
+
+function confettiBurst(box, n = 90) {
+  const colors = ['#E0A93E', '#F3CE7E', '#C4392F', '#4A90D9', '#27AE60', '#F6EFDD'];
+  for (let i = 0; i < n; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.background = colors[i % colors.length];
+    const sz = 6 + Math.random() * 6;
+    p.style.width = sz + 'px';
+    p.style.height = sz * (Math.random() < .5 ? 1 : .55) + 'px';
+    if (Math.random() < .4) p.style.borderRadius = '50%';
+    p.style.animationDelay = (Math.random() * 1.2) + 's';
+    p.style.animationDuration = (1.8 + Math.random() * 1.8) + 's';
+    box.appendChild(p);
+  }
+}
+
+function animateNumber(el, to, suffix, ms = 900) {
+  const t0 = performance.now();
+  el.textContent = (to >= 0 ? '+' : '') + '0' + suffix;
+  const tick = now => {
+    const k = Math.min(1, (now - t0) / ms);
+    el.textContent = (to >= 0 ? '+' : '') + Math.round(to * k) + suffix;
+    if (k < 1) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+  // garante o valor final mesmo se o rAF for pausado (aba em segundo plano)
+  setTimeout(() => { el.textContent = (to >= 0 ? '+' : '') + to + suffix; }, ms + 150);
+}
+
+function cardEl(card, opts = {}) {
+  const div = document.createElement('div');
+  if (!card) {
+    div.className = 'card back' + (opts.small ? ' small' : '');
+    const skin = skinById(store.deckSkin);
+    div.style.background = `repeating-linear-gradient(45deg, ${skin.c1} 0 6px, ${skin.c2} 6px 12px)`;
+    div.style.borderColor = skin.border;
+    return div;
+  }
+  const red = SUIT_RED[card.s];
+  const manilha = isManilha(card, g.vira.r);
+  div.className = 'card' + (red ? ' red' : '') + (manilha && !opts.noGlow ? ' manilha' : '') + (opts.small ? ' small' : '');
+  div.innerHTML =
+    `<div class="corner">${card.r}<small>${SUIT_SYM[card.s]}</small></div>` +
+    `<div class="pip">${SUIT_SYM[card.s]}</div>`;
+  return div;
+}
+
+function setMsg(html) { $('msg').innerHTML = html; }
+
+// assentos dos bots: 1v1 → [1] no topo; 2v2 → [3 esq, 2 topo, 1 dir]
+function buildSeats() {
+  const row = $('seatsRow');
+  row.className = 'mode' + mode;
+  row.innerHTML = '';
+  document.querySelectorAll('.side-seat').forEach(el => el.remove());
+
+  const seatHTML = p => {
+    const partnerTag = (mode === 2 && p === 2) ? ' (parceiro)' : '';
+    return `
+      <div class="avatar" id="av${p}">
+        <div class="face">${avatarSVG(g.chars[p])}</div>
+        <div class="name">${g.chars[p].name}${partnerTag}</div>
+        <div class="role-tag" id="role${p}" hidden></div>
+      </div>
+      <div class="backs" id="backs${p}"></div>
+      <div class="bubble" id="bub${p}"></div>`;
+  };
+
+  // topo: rival (1v1) ou parceiro (2v2)
+  const topP = mode === 1 ? 1 : 2;
+  const seat = document.createElement('div');
+  seat.className = 'seat' + (mode === 2 ? ' col' : '');
+  seat.id = 'seat' + topP;
+  seat.innerHTML = seatHTML(topP);
+  row.appendChild(seat);
+
+  // 2v2: rivais sentados nas laterais da mesa, como no TrucON
+  if (mode === 2) {
+    for (const [p, side] of [[3, 'left'], [1, 'right']]) {
+      const s = document.createElement('div');
+      s.className = 'side-seat ' + side;
+      s.id = 'seat' + p;
+      s.innerHTML = seatHTML(p);
+      $('tableArea').appendChild(s);
+    }
+  }
+}
+
+const SLOT_OF = () => mode === 1
+  ? { 0: 'slotBottom', 1: 'slotTop' }
+  : { 0: 'slotBottom', 1: 'slotRight', 2: 'slotTop', 3: 'slotLeft' };
+
+function render() {
+  if (!g) return;
+  const trophies = store.trophies;
+  $('trophyCount').textContent = trophies;
+  $('arenaName').textContent = 'Arena ' + arenaNumberOf(trophies);
+  $('scoreYou').textContent = Math.min(g.scores[0], g.target);
+  $('scoreBot').textContent = Math.min(g.scores[1], g.target);
+  const vale = $('valeChip');
+  vale.textContent = 'vale ' + (g.pendingValue ? `${g.handValue} → ${g.pendingValue}?` : g.handValue);
+  vale.className = 'vale' + (g.handValue === 1 && !g.pendingValue ? ' v1' : '');
+
+  // vira
+  const viraBox = $('viraCard');
+  viraBox.innerHTML = '';
+  viraBox.appendChild(cardEl(g.vira, { small: true, noGlow: true }));
+
+  // costas dos bots
+  for (let p = 1; p < numPlayers(); p++) {
+    const el = $('backs' + p);
+    if (!el) continue;
+    el.innerHTML = '';
+    for (let i = 0; i < g.hands[p].length; i++) {
+      if (mode === 1) el.appendChild(cardEl(null));
+      else {
+        const m = document.createElement('div');
+        m.className = 'mini-back';
+        const skin = skinById(store.deckSkin);
+        m.style.background = `repeating-linear-gradient(45deg, ${skin.c1} 0 4px, ${skin.c2} 4px 8px)`;
+        m.style.borderColor = skin.border;
+        el.appendChild(m);
+      }
+    }
+  }
+
+  // mesa (com animação direcional para a carta recém-jogada)
+  const slotOf = SLOT_OF();
+  const dirOf = mode === 1
+    ? { 0: 'bottom', 1: 'top' }
+    : { 0: 'bottom', 1: 'right', 2: 'top', 3: 'left' };
+  ['slotTop', 'slotLeft', 'slotRight', 'slotBottom'].forEach(sid => { $(sid).innerHTML = ''; });
+  for (let p = 0; p < numPlayers(); p++) {
+    if (g.table[p]) {
+      const el = g.tableFaceDown[p] ? cardEl(null) : cardEl(g.table[p]);
+      if (animPlay && animPlay.p === p) el.classList.add('play-' + dirOf[p]);
+      $(slotOf[p]).appendChild(el);
+    }
+  }
+  animPlay = null;
+
+  // vazas
+  for (let i = 0; i < 3; i++) {
+    const el = $('vz' + i);
+    el.className = 'vaza';
+    if (i < g.roundWinners.length) {
+      const w = g.roundWinners[i];
+      el.classList.add(w === 0 ? 'win' : w === 1 ? 'loss' : 'draw');
+    }
+  }
+
+  $('ferroBanner').hidden = !g.isFerro;
+  $('ferroBanner').textContent = matchRules.blind ? 'MESA CEGA — às escuras' : 'MÃO DE FERRO — às escuras';
+
+  // indicador de mão/pé da rodada
+  for (let p = 0; p < numPlayers(); p++) {
+    const rt = $('role' + p);
+    if (!rt) continue;
+    const isMao = p === g.maoP, isPe = p === g.dealer;
+    rt.hidden = !(isMao || isPe);
+    rt.textContent = isMao ? 'MÃO' : 'PÉ';
+  }
+
+  // mão do jogador
+  const row = $('handRow');
+  row.innerHTML = '';
+  const myTurn = g.phase === 'playing' && g.turn === 0 && !busy && !g.finished;
+  row.className = myTurn ? 'myturn' : '';
+  if (myTurn) coach('turn', 'Sua vez! Toque numa carta — as com <b>borda dourada</b> são manilhas. O relógio está correndo ⏳');
+  g.hands[0].forEach((card, i) => {
+    const el = cardEl(g.isFerro ? null : card);
+    el.classList.add(myTurn ? 'playable' : 'locked');
+    if (dealAnim) {
+      el.classList.add('deal');
+      el.style.animationDelay = (i * 90) + 'ms';
+    }
+    if (myTurn) {
+      el.addEventListener('click', () => {
+        if (busy || !g || g.phase !== 'playing' || g.turn !== 0) return;
+        busy = true;
+        const fd = coverArmed;
+        coverArmed = false;
+        playCard(0, i, fd);
+      });
+    }
+    row.appendChild(el);
+  });
+  dealAnim = false;
+
+  // botão de truco
+  const btn = $('btnTruco');
+  const nextVal = LADDER[g.handValue];
+  btn.textContent = nextVal ? CALL_NAME[nextVal] : 'TRUCO!';
+  btn.disabled = !canHumanTruco() || busy;
+
+  // carta encoberta: permitida da 2ª vaza em diante (nunca na mão de ferro)
+  const cover = $('btnCover');
+  const coverOk = g.phase === 'playing' && g.turn === 0 && !busy && !g.finished &&
+    g.roundWinners.length >= 1 && !g.isFerro && matchRules.encoberta;
+  if (!coverOk) coverArmed = false;
+  cover.hidden = !coverOk;
+  cover.classList.toggle('armed', coverArmed);
+  cover.textContent = coverArmed ? '🂠 Encoberta armada' : '🂠 Encoberta';
+
+  // três palhaços: só antes de você jogar a 1ª carta da mão
+  $('btnPalhacos').hidden = !(g.canPalhacos && g.canPalhacos[0] &&
+    g.phase === 'playing' && !g.finished && g.roundWinners.length === 0 &&
+    g.table[0] === null && g.hands[0].length === 3);
+
+  // indicadores de vez
+  const activeP = g.finished ? -1
+    : g.phase === 'playing' ? g.turn
+    : g.phase === 'awaiting' ? (g.responderTeam === 0 ? 0 : (mode === 1 ? 1 : -2))
+    : g.phase === 'onze' ? (g.onzeTeam === 0 ? 0 : (mode === 1 ? 1 : -2))
+    : -1;
+  for (let p = 1; p < numPlayers(); p++) {
+    const av = $('av' + p);
+    if (av) av.classList.toggle('turn', activeP === p || (activeP === -2 && teamOf(p) === 1));
+  }
+  $('youAvatar').classList.toggle('turn', activeP === 0 && !(g.phase === 'playing' && busy));
+
+  if (g.finished) {
+    setMsg('');
+  } else if (activeP === 0 && !(g.phase === 'playing' && busy)) {
+    const t = g.phase === 'playing'
+      ? (coverArmed ? 'ENCOBERTA armada — toque na carta' : 'SUA VEZ — toque numa carta')
+      : g.phase === 'awaiting' ? 'Responda o pedido!'
+      : 'Mão de onze — decida!';
+    setMsg('<span class="pill me">' + t + '</span>');
+  } else if (activeP === -2 || activeP > 0) {
+    const who = activeP === -2 ? 'Eles estão' : g.chars[activeP].name + ' está';
+    const t = g.phase === 'awaiting' ? ' decidindo o pedido…'
+      : g.phase === 'onze' ? ' olhando as cartas…'
+      : ' pensando…';
+    setMsg('<span class="pill bot">' + who + t + '</span>');
+  } else {
+    setMsg('');
+  }
+
+  syncTurnTimer();
+}
+
+/* ── menu ── */
+
+/* roteador de abas — telas de verdade, barra inferior persistente */
+let currentTab = 'battle';
+const TAB_SCREENS = {
+  battle: 'screenBattle', shop: 'screenShop', chars: 'screenChars',
+  profile: 'screenProfile', events: 'screenEvents', road: 'screenRoad',
+  friends: 'screenFriends', pass: 'screenPass',
+};
+
+/* ══════════ passe de temporada (coroas = mãos vencidas) ══════════ */
+
+const PASS_TIERS = 15;
+const passNeed = tier => tier * 10;
+const passReward = tier => 20 + tier * 10;
+
+function passTierReached() {
+  let n = 0;
+  while (n < PASS_TIERS && store.crowns >= passNeed(n + 1)) n++;
+  return n;
+}
+
+function passClaimable() {
+  const claimed = store.passClaimed;
+  const reached = passTierReached();
+  for (let i = 1; i <= reached; i++) if (!claimed.includes(i)) return true;
+  return false;
+}
+
+/* ══════════ tutorial — coach da primeira partida ══════════ */
+
+const tut = { shown: {}, queue: [] };
+
+function coach(id, text) {
+  if (store.tutorialDone || (matchRules && matchRules.friendly)) return;
+  if (!g || tut.shown[id]) return;
+  tut.shown[id] = true;
+  tut.queue.push(text);
+  pumpCoach();
+}
+
+function pumpCoach() {
+  const el = $('coach');
+  if (!el || !el.hidden || !tut.queue.length) return;
+  $('coachTxt').innerHTML = tut.queue.shift();
+  el.hidden = false;
+}
+const TAB_NAV = {
+  shop: 'navShop', chars: 'navChars', battle: 'navBattle',
+  profile: 'navProfile', events: 'navEvents',
+};
+
+function switchTab(tab) {
+  currentTab = tab;
+  for (const [k, id] of Object.entries(TAB_SCREENS)) $(id).hidden = k !== tab;
+  const navActive = (tab === 'road' || tab === 'friends' || tab === 'pass') ? 'battle' : tab;
+  for (const [k, id] of Object.entries(TAB_NAV)) $(id).classList.toggle('active', k === navActive);
+  renderMenu();
+}
+
+function renderMenu() {
+  // topo persistente: nível/XP e recursos
+  $('mLevel').textContent = playerLevel();
+  $('mXp').style.width = Math.round(100 * ((store.wins + store.losses) % 8) / 8) + '%';
+  $('mCoins').textContent = store.coins;
+  $('mGems').textContent = store.gems;
+  // conteúdo da aba atual
+  if (currentTab === 'battle') renderBattleScreen();
+  else if (currentTab === 'shop') renderShopScreen();
+  else if (currentTab === 'chars') renderCharsScreen();
+  else if (currentTab === 'profile') renderProfileScreen();
+  else if (currentTab === 'road') renderRoadScreen();
+  else if (currentTab === 'friends') renderFriendsScreen();
+  else if (currentTab === 'pass') renderPassScreen();
+  else if (currentTab === 'events') renderEventsScreen();
+  // badges das abas
+  $('navDot').hidden = !(roadClaimable() || missionClaimable() || passClaimable());
+  $('profileDot').hidden = !achvClaimable();
+  $('eventsDot').hidden = !eventClaimable();
+}
+
+function renderBattleScreen() {
+  const t = store.trophies;
+  const arena = arenaOf(t);
+  const next = ARENAS.find(a => a.min > t);
+  $('mTrophies').textContent = t;
+  $('mEmblem').textContent = arena.emblem;
+  $('mArena').textContent = 'Arena ' + arenaNumberOf(t);
+  if (next) {
+    $('mRange').textContent = `${arena.min}–${next.min - 1} 🏆 · próxima arena aos ${next.min}`;
+    const pct = Math.min(100, Math.round(100 * (t - arena.min) / (next.min - arena.min)));
+    $('mFill').style.width = pct + '%';
+  } else {
+    $('mRange').textContent = 'Última arena do protótipo!';
+    $('mFill').style.width = '100%';
+  }
+  const me = charById(store.charId);
+  $('mCharFace').innerHTML = avatarSVG(me);
+  $('mCharName').textContent = me.name;
+  const nr = nextRoadReward();
+  $('mNextReward').textContent = nr
+    ? `Próxima recompensa: +${nr.coins} 🪙 aos ${nr.tr} 🏆`
+    : 'Trilha completa!';
+  $('roadDot').hidden = !roadClaimable();
+  renderMissions();
+
+  // cartão do passe da temporada
+  const reached = passTierReached();
+  const claimedN = store.passClaimed.length;
+  $('passCard').innerHTML = `<h3>🎫 Passe da temporada${passClaimable() ? ' <span class="dot"></span>' : ''}</h3>
+    <div class="mission"><div class="m-txt">
+      <div class="m-name">👑 <b>${store.crowns}</b> coroas · tier <b>${claimedN}/${PASS_TIERS}</b> · vença mãos para avançar</div>
+      <div class="m-bar"><div style="width:${Math.min(100, Math.round(100 * store.crowns / passNeed(PASS_TIERS)))}%"></div></div>
+    </div><span class="m-r">ver ›</span></div>`;
+}
+
+function renderPassScreen() {
+  const claimed = store.passClaimed;
+  $('passSub').innerHTML = `Cada <b>mão vencida</b> vale <b>1 👑</b>. Você tem <b>${store.crowns} 👑</b> nesta temporada.
+    <br>Troféus resetam para 75% ao virar o mês, e o passe recomeça.`;
+  const rows = [];
+  for (let tier = 1; tier <= PASS_TIERS; tier++) {
+    const need = passNeed(tier);
+    const reached = store.crowns >= need;
+    const isClaimed = claimed.includes(tier);
+    rows.push(`<div class="shop-row">
+      <div class="shop-prev">🎫</div>
+      <div class="shop-txt"><b>Tier ${tier}</b><span>👑 ${need} coroas · recompensa +${passReward(tier)} 🪙</span></div>
+      ${isClaimed ? '<span class="shop-owned">✔</span>'
+        : reached ? `<button class="gold sm" data-pass="${tier}">Resgatar</button>`
+        : '<span class="m-done">🔒</span>'}
+    </div>
+    <div class="shop-row" style="opacity:.55">
+      <div class="shop-prev">💎</div>
+      <div class="shop-txt"><b>Tier ${tier} Premium</b><span>Fala/skin exclusiva da temporada</span></div>
+      <span class="m-done">💎 em breve</span>
+    </div>`);
+  }
+  $('passContent').innerHTML = rows.join('');
+  $('passContent').querySelectorAll('[data-pass]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tier = +btn.dataset.pass;
+      if (store.crowns < passNeed(tier) || store.passClaimed.includes(tier)) return;
+      const r = btn.getBoundingClientRect();
+      store.passClaimed = [...store.passClaimed, tier];
+      store.coins = store.coins + passReward(tier);
+      track('pass_claim');
+      renderMenu();
+      flyCoins(r, 6);
+    });
+  });
+}
+
+function renderFriendsScreen() {
+  if (!roomCfg.code) {
+    const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+    roomCfg.code = 'TRC-' +
+      Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+  }
+  $('roomCode').textContent = roomCfg.code;
+  $('frMode1').className = 'sm ' + (roomCfg.mode === 1 ? 'gold' : 'ghost');
+  $('frMode2').className = 'sm ' + (roomCfg.mode === 2 ? 'gold' : 'ghost');
+  $('frFerro').className = 'sm ' + (roomCfg.ferro ? 'gold' : 'ghost');
+  $('frFerro').textContent = roomCfg.ferro ? 'Ligada' : 'Desligada';
+  $('frCober').className = 'sm ' + (roomCfg.encoberta ? 'gold' : 'ghost');
+  $('frCober').textContent = roomCfg.encoberta ? 'Ligada' : 'Desligada';
+  $('frPalhacos').className = 'sm ' + (roomCfg.palhacos ? 'gold' : 'ghost');
+  $('frPalhacos').textContent = roomCfg.palhacos ? 'Ligada' : 'Desligada';
+  const MELA_LABEL = { oficial: 'Oficial: ninguém pontua', torna: '🔁 Torna (rejoga)', mao: '👑 Leva quem é mão', pe: '🂠 Leva quem deu' };
+  $('frMela').className = 'sm ' + (roomCfg.melaRule === 'oficial' ? 'ghost' : 'gold');
+  $('frMela').textContent = MELA_LABEL[roomCfg.melaRule] || MELA_LABEL.oficial;
+  $('frQuedas').className = 'sm ' + (roomCfg.quedas ? 'gold' : 'ghost');
+  $('frQuedas').textContent = roomCfg.quedas ? 'Ligada' : 'Desligada';
+  const me = charById(store.charId);
+  const slots = roomCfg.mode === 1 ? ['Rival'] : ['Parceiro', 'Rival', 'Rival'];
+  $('frSeats').innerHTML =
+    `<div class="fr-seat me"><b>Você</b><br>${me.name}</div>` +
+    slots.map(s => `<div class="fr-seat"><b>${s}</b><br>aguardando…<br>(bot)</div>`).join('');
+}
+
+/* timer de turno — tempo para jogar cada rodada */
+let turnTimerInt = null;
+let turnKey = null;
+let turnDeadline = 0;
+
+function stopTurnTimer() {
+  clearInterval(turnTimerInt);
+  turnTimerInt = null;
+  turnKey = null;
+  $('turnBar').className = '';
+}
+
+function startTurnTimer(key, ms, onTimeout) {
+  stopTurnTimer();
+  turnKey = key;
+  turnDeadline = Date.now() + ms;
+  $('turnBar').className = 'on';
+  turnTimerInt = setInterval(() => {
+    const left = turnDeadline - Date.now();
+    const pct = Math.max(0, 100 * left / ms);
+    $('turnFill').style.width = pct + '%';
+    $('turnBar').classList.toggle('low', pct < 30);
+    const dlg = document.getElementById('dlgTimer');
+    if (dlg) dlg.textContent = '⏳ ' + Math.max(0, Math.ceil(left / 1000)) + 's';
+    if (left <= 0) {
+      stopTurnTimer();
+      onTimeout();
+    }
+  }, 100);
+}
+
+function syncTurnTimer() {
+  if (!g || g.finished) { stopTurnTimer(); return; }
+  let need = null;
+  if (g.phase === 'playing' && g.turn === 0 && !busy) {
+    need = { key: `p:${g.handNum}:${g.roundWinners.length}:${g.table.filter(Boolean).length}`, ms: 15000, act: timeoutPlay };
+  } else if (g.phase === 'awaiting' && g.responderTeam === 0) {
+    need = { key: `a:${g.handNum}:${g.pendingValue}`, ms: 12000, act: timeoutTruco };
+  } else if (g.phase === 'onze' && g.onzeTeam === 0) {
+    need = { key: `o:${g.handNum}`, ms: 15000, act: timeoutOnze };
+  }
+  if (!need) { stopTurnTimer(); return; }
+  if (turnKey === need.key) return;
+  startTurnTimer(need.key, need.ms, need.act);
+}
+
+function timeoutPlay() {
+  if (!g || g.finished || g.phase !== 'playing' || g.turn !== 0 || busy) return;
+  busy = true;
+  coverArmed = false;
+  announce('Tempo esgotado!', 'bad');
+  const idx = g.isFerro
+    ? Math.floor(Math.random() * g.hands[0].length)
+    : weakestIdx(g.hands[0]);
+  playCard(0, idx);
+}
+
+function timeoutTruco() {
+  if (!g || g.finished || g.phase !== 'awaiting' || g.responderTeam !== 0) return;
+  closeDialog();
+  announce('Tempo esgotado — correu!', 'bad');
+  runFromTruco(0);
+}
+
+function timeoutOnze() {
+  if (!g || g.finished || g.phase !== 'onze' || g.onzeTeam !== 0) return;
+  closeDialog();
+  announce('Tempo esgotado — correu!', 'bad');
+  decideOnze(0, false, 0);
+}
+
+function renderProfileScreen() {
+  const w = store.wins, l = store.losses, tot = w + l;
+  const wr = tot ? Math.round(100 * w / tot) : 0;
+  const me = charById(store.charId);
+  const s = store.stats;
+  const claimed = store.achvClaimed;
+  const achRows = ACHV.map(a => {
+    const prog = Math.min(a.target, a.prog());
+    const done = prog >= a.target;
+    const isC = claimed.includes(a.id);
+    const right = isC ? '<span class="m-done">✔</span>'
+      : done ? `<button class="gold sm" data-achv="${a.id}">+${a.reward} 🪙</button>`
+      : `<span class="m-r">+${a.reward} 🪙</span>`;
+    return `<div class="mission"><div class="m-txt">
+      <div class="m-name">${a.icon} ${a.name} · <b>${prog}/${a.target}</b></div>
+      <div class="m-bar"><div style="width:${Math.round(100 * prog / a.target)}%"></div></div>
+    </div>${right}</div>`;
+  }).join('');
+  $('profileContent').innerHTML = `
+    <div class="menu-missions">
+      <h3>Nível ${playerLevel()}</h3>
+      <p style="margin:0; font-size:13px; line-height:1.7">
+        🏆 ${store.trophies} troféus · Arena ${arenaNumberOf(store.trophies)} · 👑 ${store.crowns} coroas<br>
+        Jogando como <b>${me.name}</b>
+      </p>
+    </div>
+    <div class="menu-missions">
+      <h3>📈 Estatísticas</h3>
+      <p style="margin:0; font-size:12px; line-height:1.9">
+        ${tot} partidas · <b>${w}</b> vitórias · ${l} derrotas · <b>${wr}%</b> de aproveitamento<br>
+        Trucos pedidos: <b>${s.trucos || 0}</b> · trucos aceitos: <b>${s.trucosAceitos || 0}</b><br>
+        Manilhas jogadas: <b>${s.manilhas || 0}</b> · vazas vencidas: <b>${s.vazas || 0}</b><br>
+        Maior sequência de vitórias: <b>${s.maxStreak || 0}</b> (atual: ${s.curStreak || 0})<br>
+        Vitórias 2v2: <b>${s.wins2 || 0}</b> · mãos de ferro vencidas: <b>${s.ferroWins || 0}</b>
+      </p>
+    </div>
+    <div class="menu-missions">
+      <h3>🏅 Conquistas${achvClaimable() ? ' <span class="dot"></span>' : ''}</h3>
+      ${achRows}
+    </div>
+    <div class="menu-missions">
+      <h3>⚙️ Preferências</h3>
+      <button class="ghost sm" id="btnSoundPref">${store.sound ? '🔊 Som e vibração: ligados' : '🔇 Som e vibração: desligados'}</button>
+      <button class="ghost sm" id="btnSpeedPref">${store.fast ? '⚡ Jogo rápido: ligado' : '🐢 Jogo rápido: desligado'}</button>
+    </div>
+    <div class="menu-missions">
+      <h3>📈 Analytics local (protótipo)</h3>
+      <p style="margin:0; font-size:11px; color:var(--cream-dim); line-height:1.6">${(() => {
+        try {
+          const a = JSON.parse(localStorage.getItem('trucada_analytics') || '{}');
+          return Object.entries(a).map(([k, v]) => `${k}: <b>${v}</b>`).join(' · ') || 'sem eventos ainda';
+        } catch (e) { return 'sem eventos'; }
+      })()}</p>
+      ${localStorage.getItem('trucada_lasterror')
+        ? `<p style="margin:0; font-size:11px; color:#F2A9A1">Último erro: ${localStorage.getItem('trucada_lasterror')}</p>`
+        : ''}
+      <p class="fr-note">No app real isso vira Firebase Analytics + Crashlytics.</p>
+    </div>`;
+  const sp = document.getElementById('btnSoundPref');
+  if (sp) sp.addEventListener('click', () => {
+    store.sound = !store.sound;
+    sfx('tap');
+    renderMenu();
+  });
+  const spd = document.getElementById('btnSpeedPref');
+  if (spd) spd.addEventListener('click', () => {
+    store.fast = !store.fast;
+    sfx('tap');
+    renderMenu();
+  });
+  $('profileContent').querySelectorAll('[data-achv]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const a = ACHV.find(x => x.id === btn.dataset.achv);
+      if (!a || store.achvClaimed.includes(a.id) || a.prog() < a.target) return;
+      const r = btn.getBoundingClientRect();
+      store.achvClaimed = [...store.achvClaimed, a.id];
+      store.coins = store.coins + a.reward;
+      track('achv_claim');
+      renderMenu();
+      flyCoins(r, 6);
+    });
+  });
+}
+
+/* ── eventos (modo especial da semana) ── */
+
+function renderEventsScreen() {
+  const ev = currentEvent();
+  const d = eventWeekData();
+  $('eventsContent').innerHTML = `
+    <div class="arena-banner" style="background: linear-gradient(135deg, #6E2C8E 0%, #431A57 100%)">
+      <div class="ab-emblem">${ev.icon}</div>
+      <div class="ab-info"><b>${ev.name}</b><span>${ev.desc}</span></div>
+    </div>
+    <div class="menu-missions">
+      <h3>Recompensa da semana${eventClaimable() ? ' <span class="dot"></span>' : ''}</h3>
+      <div class="mission"><div class="m-txt">
+        <div class="m-name">Vença 3 partidas do evento · <b>${Math.min(3, d.wins)}/3</b></div>
+        <div class="m-bar"><div style="width:${Math.min(100, Math.round(100 * d.wins / 3))}%"></div></div>
+      </div>${d.claimed ? '<span class="m-done">✔ Resgatada</span>'
+        : d.wins >= 3 ? '<button class="gold sm" id="evClaim">+300 🪙</button>'
+        : '<span class="m-r">+300 🪙</span>'}</div>
+      <p class="fr-note">Vitória no evento paga <b>+40 🪙</b> e não vale troféus. O modo troca toda semana.</p>
+    </div>
+    <button class="gold big" id="btnPlayEvent">JOGAR ${ev.icon} ${ev.name.toUpperCase()}</button>`;
+  $('btnPlayEvent').addEventListener('click', () => {
+    track('event_start');
+    startGame(1, Object.assign({}, ev.rules, { friendly: true, event: ev.id }));
+  });
+  const c = document.getElementById('evClaim');
+  if (c) c.addEventListener('click', () => {
+    const dd = eventWeekData();
+    if (dd.wins < 3 || dd.claimed) return;
+    const r = c.getBoundingClientRect();
+    dd.claimed = true;
+    store.eventData = dd;
+    store.coins = store.coins + 300;
+    track('event_claim');
+    renderMenu();
+    flyCoins(r, 8);
+  });
+}
+
+function renderMissions() {
+  const m = dailyMissions();
+  const card = $('missionsCard');
+  const rows = m.ids.map(id => {
+    const def = MISSION_POOL.find(x => x.id === id);
+    const prog = Math.min(def.target, m.progress[id] || 0);
+    const claimed = m.claimed.includes(id);
+    const done = prog >= def.target;
+    const right = claimed ? '<span class="m-done">✔ Resgatada</span>'
+      : done ? `<button class="gold sm" data-claim="${id}">+${def.reward} 🪙</button>`
+      : `<span class="m-r">+${def.reward} 🪙</span>` +
+        (!m.rerollUsed ? `<button class="ghost sm" data-reroll="${id}" title="Trocar missão (1x por dia)" style="padding:6px 8px; margin-left:4px">🔄</button>` : '');
+    return `<div class="mission">
+      <div class="m-txt">
+        <div class="m-name">${def.name} · <b>${prog}/${def.target}</b></div>
+        <div class="m-bar"><div style="width:${Math.round(100 * prog / def.target)}%"></div></div>
+      </div>${right}</div>`;
+  }).join('');
+  card.innerHTML = `<h3>⚔️ Missões de hoje${missionClaimable() ? ' <span class="dot"></span>' : ''}
+    <span class="m-done" style="margin-left:auto; font-weight:400">${missionResetTxt()}</span></h3>${rows}`;
+  card.querySelectorAll('[data-claim]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.claim;
+      const def = MISSION_POOL.find(x => x.id === id);
+      const mm = dailyMissions();
+      if (!def || mm.claimed.includes(id) || (mm.progress[id] || 0) < def.target) return;
+      const r = btn.getBoundingClientRect();
+      mm.claimed.push(id);
+      store.missions = mm;
+      store.coins = store.coins + def.reward;
+      track('mission_claim');
+      renderMenu();
+      flyCoins(r, 6);
+    });
+  });
+  card.querySelectorAll('[data-reroll]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const mm = dailyMissions();
+      if (mm.rerollUsed) return;
+      const id = btn.dataset.reroll;
+      const alt = MISSION_POOL.filter(x => !mm.ids.includes(x.id));
+      if (!alt.length) return;
+      const nu = alt[Math.floor(Math.random() * alt.length)];
+      mm.ids = mm.ids.map(x => x === id ? nu.id : x);
+      delete mm.progress[id];
+      mm.rerollUsed = true;
+      store.missions = mm;
+      sfx('tap');
+      track('mission_reroll');
+      renderMenu();
+    });
+  });
+}
+
+function msNodeHTML(m, t, claimed, side) {
+  const reached = t >= m.tr;
+  const isClaimed = claimed.includes(m.tr);
+  const state = !reached ? ' locked' : (isClaimed ? ' done' : ' claimable');
+  const icon = !reached ? '🔒' : isClaimed ? '✔' : '🪙';
+  const claimAttr = (reached && !isClaimed) ? ` data-road="${m.tr}"` : '';
+  return `<div class="pnode-row ${side}"><div class="pnode${state}"${claimAttr}>
+    <div class="pn-circle">${icon}</div>
+    <div class="pn-label">+${m.coins} 🪙 · 🏆 ${m.tr}</div>
+  </div></div>`;
+}
+
+function arenaBannerHTML(m, t, claimed) {
+  const a = m.arena;
+  const reached = t >= m.tr;
+  const isClaimed = claimed.includes(m.tr);
+  const right = isClaimed ? '<span class="m-done">✔</span>'
+    : reached ? `<button class="gold sm" data-road="${m.tr}">+${m.coins} 🪙</button>`
+    : '<span class="m-done">🔒</span>';
+  return `<div class="arena-banner${reached ? '' : ' locked'}"
+      style="background: linear-gradient(135deg, ${a.c1} 0%, ${a.c2} 100%)">
+    <div class="ab-emblem">${a.emblem}</div>
+    <div class="ab-info"><b>Arena ${ARENAS.indexOf(a) + 1}</b><span>🏆 ${m.tr}</span></div>
+    ${right}</div>`;
+}
+
+function youMarkerHTML(t) {
+  const me = charById(store.charId);
+  return `<div class="you-strip">
+    <div class="p-node">${avatarSVG(me)}</div>
+    <div><b>VOCÊ ESTÁ AQUI</b><span>🏆 ${t} · Arena ${arenaNumberOf(t)}</span></div></div>`;
+}
+
+function renderRoadScreen() {
+  const claimed = store.claimedRoad;
+  const t = store.trophies;
+  $('roadTr').innerHTML = `Seu caminho até o topo — você tem <b>${t} 🏆</b>`;
+  // do topo (fim do caminho) para a base (Boteco), serpenteando como no CR
+  const desc = [...roadMilestones()].reverse();
+  const html = [];
+  let youPlaced = false;
+  let side = 'left';
+  for (const m of desc) {
+    if (!youPlaced && t >= m.tr) {
+      html.push(youMarkerHTML(t));
+      youPlaced = true;
+    }
+    if (m.arena) {
+      html.push(arenaBannerHTML(m, t, claimed));
+    } else {
+      html.push(msNodeHTML(m, t, claimed, side));
+      side = side === 'left' ? 'right' : 'left';
+    }
+  }
+  if (!youPlaced) html.push(youMarkerHTML(t));
+  const a0 = ARENAS[0];
+  html.push(`<div class="arena-banner"
+      style="background: linear-gradient(135deg, ${a0.c1} 0%, ${a0.c2} 100%)">
+    <div class="ab-emblem">${a0.emblem}</div>
+    <div class="ab-info"><b>Arena 1</b><span>🏆 0 · o começo de tudo</span></div>
+    <span class="m-done">✔</span></div>`);
+  $('roadContent').innerHTML = html.join('');
+  $('roadContent').querySelectorAll('[data-road]').forEach(el => {
+    el.addEventListener('click', () => {
+      const tr = +el.dataset.road;
+      const ms = roadMilestones().find(x => x.tr === tr);
+      if (!ms || store.trophies < tr || store.claimedRoad.includes(tr)) return;
+      const r = el.getBoundingClientRect();
+      store.claimedRoad = [...store.claimedRoad, tr];
+      store.coins = store.coins + ms.coins;
+      track('road_claim');
+      renderMenu();
+      flyCoins(r, 6);
+    });
+  });
+  const you = $('roadContent').querySelector('.you-strip');
+  if (you) you.scrollIntoView({ block: 'center' });
+}
+
+function renderShopScreen() {
+  const coins = store.coins;
+  const rows = [];
+
+  rows.push('<div class="shop-h">Personagens</div>');
+  for (const c of CHARACTERS.filter(x => x.unlock.type === 'compra')) {
+    const owned = store.ownedChars.includes(c.id);
+    rows.push(`<div class="shop-row">
+      <div class="shop-prev">${avatarSVG(c)}</div>
+      <div class="shop-txt"><b>${c.name}</b><span>Personagem + falas exclusivas</span></div>
+      ${owned
+        ? (store.charId === c.id
+            ? '<span class="shop-owned">Em uso</span>'
+            : `<button class="gold sm" data-act="usechar" data-id="${c.id}">Usar</button>`)
+        : `<button class="gold sm" data-act="buychar" data-id="${c.id}" ${coins < c.unlock.price ? 'disabled' : ''}>${c.unlock.price} 🪙</button>`}
+    </div>`);
+  }
+
+  rows.push('<div class="shop-h">Falas avulsas</div>');
+  for (const f of FALAS_SHOP) {
+    const owned = store.ownedFalas.includes(f.id);
+    rows.push(`<div class="shop-row">
+      <div class="shop-prev">💬</div>
+      <div class="shop-txt"><b>“${f.text}”</b><span>Entra no seu painel 💬 na mesa</span></div>
+      ${owned
+        ? '<span class="shop-owned">✔</span>'
+        : `<button class="gold sm" data-act="buyfala" data-id="${f.id}" ${coins < f.price ? 'disabled' : ''}>${f.price} 🪙</button>`}
+    </div>`);
+  }
+
+  rows.push('<div class="shop-h">Baralhos</div>');
+  for (const s of DECK_SKINS) {
+    const owned = store.ownedSkins.includes(s.id);
+    const equipped = store.deckSkin === s.id;
+    rows.push(`<div class="shop-row">
+      <div class="shop-prev">${deckPrevHTML(s)}</div>
+      <div class="shop-txt"><b>${s.name}</b><span>Skin do verso do baralho</span></div>
+      ${equipped ? '<span class="shop-owned">Em uso</span>'
+        : owned ? `<button class="gold sm" data-act="equipskin" data-id="${s.id}">Equipar</button>`
+        : `<button class="gold sm" data-act="buyskin" data-id="${s.id}" ${coins < s.price ? 'disabled' : ''}>${s.price} 🪙</button>`}
+    </div>`);
+  }
+
+  rows.push('<div class="shop-h">Mesas</div>');
+  for (const s of TABLE_SKINS) {
+    const owned = store.ownedTables.includes(s.id);
+    const equipped = store.tableSkin === s.id;
+    rows.push(`<div class="shop-row">
+      <div class="shop-prev">${tablePrevHTML(s)}</div>
+      <div class="shop-txt"><b>${s.name}</b><span>Skin da mesa de jogo</span></div>
+      ${equipped ? '<span class="shop-owned">Em uso</span>'
+        : owned ? `<button class="gold sm" data-act="equiptable" data-id="${s.id}">Equipar</button>`
+        : `<button class="gold sm" data-act="buytable" data-id="${s.id}" ${coins < s.price ? 'disabled' : ''}>${s.price} 🪙</button>`}
+    </div>`);
+  }
+
+  $('shopCoins').innerHTML = `Você tem <b>${coins} 🪙</b> · no lançamento, itens premium por 💎`;
+  $('shopContent').innerHTML = rows.join('');
+  $('shopContent').querySelectorAll('[data-act]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.id;
+      switch (btn.dataset.act) {
+        case 'buychar': {
+          const c = charById(id);
+          if (store.coins < c.unlock.price) return;
+          store.coins = store.coins - c.unlock.price;
+          store.ownedChars = [...store.ownedChars, id];
+          break;
+        }
+        case 'usechar':
+          store.charId = id;
+          break;
+        case 'buyfala': {
+          const f = FALAS_SHOP.find(x => x.id === id);
+          if (store.coins < f.price) return;
+          store.coins = store.coins - f.price;
+          store.ownedFalas = [...store.ownedFalas, id];
+          break;
+        }
+        case 'buyskin': {
+          const s = skinById(id);
+          if (store.coins < s.price) return;
+          store.coins = store.coins - s.price;
+          store.ownedSkins = [...store.ownedSkins, id];
+          store.deckSkin = id; // equipa ao comprar
+          break;
+        }
+        case 'equipskin':
+          store.deckSkin = id;
+          break;
+        case 'buytable': {
+          const s = tableSkinById(id);
+          if (store.coins < s.price) return;
+          store.coins = store.coins - s.price;
+          store.ownedTables = [...store.ownedTables, id];
+          store.tableSkin = id; // equipa ao comprar
+          break;
+        }
+        case 'equiptable':
+          store.tableSkin = id;
+          break;
+      }
+      sfx('coin');
+      if (btn.dataset.act.indexOf('buy') === 0) bumpStat('buys');
+      track('shop_' + btn.dataset.act);
+      renderMenu(); // a tela da loja re-renderiza com o estado novo
+    });
+  });
+}
+
+function showFalasDialog() {
+  const all = playerFalas();
+  openDialog(`
+    <h2>💬 Suas falas</h2>
+    <p style="margin:0">Toque para falar na mesa. Compre pacotes na 🛒 Loja para ter mais.</p>
+    <div class="fala-list">${all.map((f, i) =>
+      `<button class="ghost fala-btn" data-fala="${i}">${f}</button>`).join('')}</div>
+    <div class="btns"><button class="ghost" id="dClose">Fechar</button></div>`);
+  $('dClose').onclick = closeDialog;
+  document.querySelectorAll('.fala-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      closeDialog();
+      say(0, all[+btn.dataset.fala]);
+      missionEvent('fala');
+    });
+  });
+}
+
+
+function renderCharsScreen() {
+  $('charsContent').innerHTML = CHARACTERS.map(c => {
+    const locked = !isUnlocked(c);
+    const sel = c.id === store.charId;
+    return `<div class="char${sel ? ' sel' : ''}${locked ? ' locked' : ''}" data-id="${c.id}">
+      <div class="cface">${avatarSVG(c)}</div>
+      <div class="cname">${c.name}</div>
+      <div class="cstat">${charStatus(c)}</div>
+    </div>`;
+  }).join('');
+  $('charsContent').querySelectorAll('.char').forEach(el => {
+    el.addEventListener('click', () => {
+      const c = charById(el.dataset.id);
+      if (!isUnlocked(c)) return;
+      store.charId = c.id;
+      renderMenu();
+    });
+  });
+}
+
+/* ── diálogos do jogo ── */
+
+function openDialog(html) {
+  $('dialog').innerHTML = html;
+  $('overlay').classList.add('show');
+}
+function closeDialog() { $('overlay').classList.remove('show'); }
+
+function miniCardHTML(c) {
+  const red = SUIT_RED[c.s] ? ' red' : '';
+  const man = isManilha(c, g.vira.r) ? ' manilha' : '';
+  return `<div class="card small${red}${man}">
+    <div class="corner">${c.r}<small>${SUIT_SYM[c.s]}</small></div>
+    <div class="pip">${SUIT_SYM[c.s]}</div></div>`;
+}
+
+function viraInfoHTML() {
+  return `<div class="dlg-vira">${miniCardHTML(g.vira)}
+    <div class="txt">Vira ${g.vira.r}${SUIT_SYM[g.vira.s]}<br>manilha é o <b>${manilhaRank(g.vira.r)}</b></div></div>`;
+}
+
+function showTrucoDialog() {
+  const v = g.pendingValue;
+  const canRaise = v < 12;
+  const caller = g.chars[g.callerP];
+  openDialog(`
+    <h2>${caller.name} pediu ${CALL_NAME[v].replace('!', '')}!</h2>
+    <p class="dlg-timer" id="dlgTimer"></p>
+    <p>A mão passa a valer <b>${v}</b>. Se correr, eles levam <b>${g.handValue}</b>.</p>
+    ${viraInfoHTML()}
+    <p class="dlg-label">Suas cartas:</p>
+    <div class="cards">${g.hands[0].map(miniCardHTML).join('')}</div>
+    <div class="btns">
+      <button class="gold" id="dAccept">Aceitar (vale ${v})</button>
+      ${canRaise ? `<button class="truco" id="dRaise">${CALL_NAME[LADDER[v]]} (vale ${LADDER[v]})</button>` : ''}
+      <button class="ghost" id="dRun">Correr (eles +${g.handValue})</button>
+    </div>`);
+  $('dAccept').onclick = () => { closeDialog(); acceptTruco(0); };
+  $('dRun').onclick = () => { closeDialog(); runFromTruco(0); };
+  const raise = $('dRaise');
+  if (raise) raise.onclick = () => { closeDialog(); callTruco(0); };
+}
+
+function showOnzeDialog() {
+  const partnerNote = mode === 2 ? ' Seu parceiro confia na sua decisão.' : '';
+  openDialog(`
+    <h2>Mão de onze</h2>
+    <p class="dlg-timer" id="dlgTimer"></p>
+    <p>Seu time tem ${g.target - 1} pontos. Olhe suas cartas e decida: jogar valendo <b>3</b> ou correr e dar <b>1</b> ponto para eles.${partnerNote}</p>
+    ${viraInfoHTML()}
+    <p class="dlg-label">Suas cartas:</p>
+    <div class="cards">${g.hands[0].map(miniCardHTML).join('')}</div>
+    <div class="btns">
+      <button class="gold" id="dPlay">Jogar (vale 3)</button>
+      <button class="ghost" id="dFold">Correr (eles +1)</button>
+    </div>`);
+  $('dPlay').onclick = () => { closeDialog(); decideOnze(0, true, 0); };
+  $('dFold').onclick = () => { closeDialog(); decideOnze(0, false, 0); };
+}
+
+function showMatchEnd(winnerTeam) {
+  const won = winnerTeam === 0;
+  stopTurnTimer();
+  closeDialog();
+  sfx(won ? 'victory' : 'defeat');
+  buzz(won ? [80, 50, 80, 50, 160] : 120);
+  const ev = matchRules.event ? EVENTS.find(x => x.id === matchRules.event) : null;
+  const rivalNames = mode === 1 ? g.chars[1].name : `${g.chars[1].name} e ${g.chars[3].name}`;
+  const weNames = mode === 1 ? 'Você' : `Você e ${g.chars[2].name}`;
+  const box = $('confettiBox');
+  box.innerHTML = '';
+  $('endTitle').textContent = won ? 'VITÓRIA!' : 'Derrota…';
+  $('endTitle').classList.toggle('lose', !won);
+  if (won) confettiBurst(box);
+
+  let coins;
+  if (matchRules.friendly) {
+    coins = ev ? (won ? 40 : 10) : 15;
+    store.coins = store.coins + coins;
+    if (ev) {
+      if (won) {
+        const d = eventWeekData();
+        d.wins++;
+        store.eventData = d;
+        track('event_win');
+      }
+      $('endSub').textContent = `${ev.icon} ${ev.name} contra ${rivalNames}${won ? ' — conta para a recompensa da semana!' : '.'}`;
+    } else if (matchRules.quedas && roomSeries) {
+      roomSeries[won ? 0 : 1]++;
+      const sw = roomSeries[0] >= 2 ? 0 : roomSeries[1] >= 2 ? 1 : null;
+      if (sw === null) {
+        $('endSub').textContent = `Queda ${roomSeries[0] + roomSeries[1]} contra ${rivalNames} — série ${roomSeries[0]} × ${roomSeries[1]}, melhor de 3. Bora pra próxima!`;
+      } else {
+        $('endTitle').textContent = sw === 0 ? 'VENCEU A SÉRIE!' : 'Perdeu a série…';
+        $('endSub').textContent = `Série fechada em ${roomSeries[0]} × ${roomSeries[1]} contra ${rivalNames}.`;
+        if (sw === 0) { coins += 30; store.coins = store.coins + 30; }
+        roomSeries = [0, 0];
+      }
+    } else {
+      $('endSub').textContent = `Amistoso na sala ${roomCfg.code || ''} contra ${rivalNames} — não vale troféus.`;
+    }
+    $('endTroph').hidden = true;
+    $('endArena').hidden = true;
+  } else {
+    const { t, coins: c } = applyMatchRewards(won);
+    coins = c;
+    track(won ? 'match_win' : 'match_lose');
+    if (!store.tutorialDone) store.tutorialDone = true;
+    const s = store.stats;
+    if (won) {
+      s.curStreak = (s.curStreak || 0) + 1;
+      s.maxStreak = Math.max(s.maxStreak || 0, s.curStreak);
+      if (mode === 2) s.wins2 = (s.wins2 || 0) + 1;
+    } else {
+      s.curStreak = 0;
+      if (mode === 2) s.losses2 = (s.losses2 || 0) + 1;
+    }
+    store.stats = s;
+    $('endSub').textContent = won
+      ? `${weNames} fechou os ${g.target} contra ${rivalNames}.`
+      : `${rivalNames} fechou os ${g.target} pontos.`;
+    const tr = $('endTroph');
+    tr.hidden = false;
+    tr.className = 'end-troph ' + (t.delta >= 0 ? 'up' : 'down');
+    animateNumber(tr, t.delta, ' 🏆');
+    const arena = arenaOf(t.after);
+    const next = ARENAS.find(a => a.min > t.after);
+    $('endArena').hidden = false;
+    $('eaEmblem').textContent = arena.emblem;
+    $('eaName').textContent = 'Arena ' + arenaNumberOf(t.after);
+    $('eaSub').textContent = next
+      ? `${t.after} 🏆 · próxima arena aos ${next.min}`
+      : `${t.after} 🏆 · topo do protótipo!`;
+    const pct = v => {
+      const a = arenaOf(v);
+      const nx = ARENAS.find(x => x.min > v);
+      return nx ? Math.min(100, Math.round(100 * (v - a.min) / (nx.min - a.min))) : 100;
+    };
+    const fill = $('eaFill');
+    fill.style.transition = 'none';
+    fill.style.width = pct(t.before) + '%';
+    setTimeout(() => {
+      fill.style.transition = 'width .9s cubic-bezier(.2,.8,.3,1)';
+      fill.style.width = pct(t.after) + '%';
+    }, 400);
+  }
+  $('endCoins').textContent = `+${coins} 🪙`;
+  $('endView').hidden = false;
+  setTimeout(() => sfx('coin'), 650);
+}
+
+/* rever uma vaza já jogada (toque nos pontinhos) */
+function showVazaDialog(i) {
+  const v = g.vazaLog[i];
+  if (!v) return;
+  const rows = v.plays.filter(pl => pl.c).map(pl => `
+    <div class="shop-row">
+      <div class="shop-prev">${avatarSVG(g.chars[pl.q])}</div>
+      <div class="shop-txt"><b>${pl.q === 0 ? 'Você' : g.chars[pl.q].name}</b>
+        <span>${pl.fd ? 'jogou encoberta' : ''}</span></div>
+      ${pl.fd ? '<div class="card small back"></div>' : miniCardHTML(pl.c)}
+    </div>`).join('');
+  openDialog(`
+    <h2>${i + 1}ª vaza</h2>
+    <p>${v.winner === null ? 'Empatada' : v.winner === 0 ? 'Vaza do seu time' : 'Vaza deles'}</p>
+    <div class="shop-list" style="max-height:none; margin:8px 0">${rows}</div>
+    <div class="btns"><button class="ghost" id="dClose">Fechar</button></div>`);
+  $('dClose').onclick = closeDialog;
+}
+
+/* ── boot ── */
+
+$('btnTruco').addEventListener('click', () => {
+  if (!canHumanTruco() || busy) return;
+  busy = true;
+  callTruco(0);
+});
+$('btnCover').addEventListener('click', () => {
+  coverArmed = !coverArmed;
+  render();
+});
+$('btnFala').addEventListener('click', () => {
+  if (g && !g.finished) showFalasDialog();
+});
+$('arenaCard').addEventListener('click', () => switchTab('road'));
+$('btnFriends').addEventListener('click', () => switchTab('friends'));
+$('btnFriendsBack').addEventListener('click', () => switchTab('battle'));
+$('frMode1').addEventListener('click', () => { roomCfg.mode = 1; renderFriendsScreen(); });
+$('frMode2').addEventListener('click', () => { roomCfg.mode = 2; renderFriendsScreen(); });
+$('frFerro').addEventListener('click', () => { roomCfg.ferro = !roomCfg.ferro; renderFriendsScreen(); });
+$('frCober').addEventListener('click', () => { roomCfg.encoberta = !roomCfg.encoberta; renderFriendsScreen(); });
+$('frPalhacos').addEventListener('click', () => { roomCfg.palhacos = !roomCfg.palhacos; renderFriendsScreen(); });
+$('frMela').addEventListener('click', () => {
+  const order = ['oficial', 'torna', 'mao', 'pe'];
+  roomCfg.melaRule = order[(order.indexOf(roomCfg.melaRule) + 1) % order.length];
+  renderFriendsScreen();
+});
+$('frQuedas').addEventListener('click', () => { roomCfg.quedas = !roomCfg.quedas; renderFriendsScreen(); });
+$('btnFriendsStart').addEventListener('click', () => {
+  roomSeries = roomCfg.quedas ? [0, 0] : null;
+  track('friends_start');
+  startGame(roomCfg.mode, {
+    ferro: roomCfg.ferro, encoberta: roomCfg.encoberta, friendly: true,
+    palhacos: roomCfg.palhacos, melaRule: roomCfg.melaRule, quedas: roomCfg.quedas,
+  });
+});
+$('btnPalhacos').addEventListener('click', () => {
+  if (!g || g.phase !== 'playing' || g.finished || busy) return;
+  if (!(g.canPalhacos && g.canPalhacos[0]) || g.roundWinners.length || g.table[0] !== null) return;
+  busy = true;
+  say(0, 'Três palhaços!');
+  announce('Três palhaços — mesa nova!');
+  sfx('deal');
+  track('palhacos');
+  const hn = g.handNum;
+  schedule(() => { if (g.handNum === hn) nextHand(true); }, 1000);
+});
+$('btnCopyInvite').addEventListener('click', async () => {
+  const btn = $('btnCopyInvite');
+  const txt = `Bora um truco? Entra na minha sala ${roomCfg.code} no Trucada! 🃏`;
+  try {
+    await navigator.clipboard.writeText(txt);
+    btn.textContent = '✔ Copiado!';
+  } catch (e) {
+    btn.textContent = roomCfg.code;
+  }
+  setTimeout(() => { btn.textContent = '📋 Copiar convite'; }, 1800);
+});
+
+// bônus único para testar a loja completa
+if (!localStorage.getItem('trucada_grant1')) {
+  localStorage.setItem('trucada_grant1', '1');
+  store.coins = store.coins + 5000;
+}
+
+// migração: pacotes de falas antigos viram falas avulsas equivalentes
+(function migratePacks() {
+  let packs;
+  try { packs = JSON.parse(localStorage.getItem('trucada_opacks') || '[]'); }
+  catch (e) { packs = []; }
+  if (!packs.length) return;
+  const map = {
+    boteco: ['f_marreco', 'f_desce', 'f_borahj', 'f_pago', 'f_rodada', 'f_garcom', 'f_copo'],
+    arretado: ['f_visse', 'f_arrocha', 'f_simbora', 'f_vixe', 'f_arretado', 'f_oxente', 'f_lasqueira'],
+  };
+  const cur = store.ownedFalas;
+  for (const p of packs) (map[p] || []).forEach(id => { if (!cur.includes(id)) cur.push(id); });
+  store.ownedFalas = cur;
+  localStorage.removeItem('trucada_opacks');
+})();
+$('btnPlay1').addEventListener('click', () => startGame(1));
+$('btnPlay2').addEventListener('click', () => startGame(2));
+$('btnChars').addEventListener('click', () => switchTab('chars'));
+$('navChars').addEventListener('click', () => switchTab('chars'));
+$('navShop').addEventListener('click', () => switchTab('shop'));
+$('navProfile').addEventListener('click', () => switchTab('profile'));
+$('navEvents').addEventListener('click', () => switchTab('events'));
+$('navBattle').addEventListener('click', () => switchTab('battle'));
+$('btnRoadBack').addEventListener('click', () => switchTab('battle'));
+$('btnRoadTop').addEventListener('click', () => switchTab('battle'));
+document.querySelectorAll('[data-back]').forEach(b =>
+  b.addEventListener('click', () => switchTab('battle')));
+$('btnMenu').addEventListener('click', showMenu);
+$('passCard').addEventListener('click', () => switchTab('pass'));
+$('btnPassBack').addEventListener('click', () => switchTab('battle'));
+$('coachOk').addEventListener('click', () => {
+  $('coach').hidden = true;
+  sfx('tap');
+  pumpCoach();
+});
+$('btnSound').addEventListener('click', () => {
+  store.sound = !store.sound;
+  $('btnSound').textContent = store.sound ? '🔊' : '🔇';
+  sfx('tap');
+});
+$('btnSound').textContent = store.sound ? '🔊' : '🔇';
+$('btnSpeed').addEventListener('click', () => {
+  store.fast = !store.fast;
+  $('btnSpeed').classList.toggle('on', store.fast);
+  $('gameView').classList.toggle('fast', store.fast);
+  sfx('tap');
+});
+$('endAgain').addEventListener('click', () => {
+  $('endView').hidden = true;
+  busy = false;
+  newMatch();
+});
+$('endMenu').addEventListener('click', () => {
+  $('endView').hidden = true;
+  busy = false;
+  showMenu();
+});
+// rever vazas já jogadas tocando nos pontinhos
+$('vazas').addEventListener('click', e => {
+  const el = e.target.closest('.vaza');
+  if (!el || !g || !g.vazaLog) return;
+  const i = +el.id.slice(2);
+  if (i < g.vazaLog.length) showVazaDialog(i);
+});
+setTimeout(() => { const s = document.getElementById('splash'); if (s) s.remove(); }, 1800);
+
+// temporada mensal: virou o mês → troféus caem para 75% (com piso) e o passe zera
+let seasonResetInfo = null;
+(function seasonCheck() {
+  const d = new Date();
+  const key = d.getFullYear() + '-' + (d.getMonth() + 1);
+  const prev = localStorage.getItem('trucada_season');
+  localStorage.setItem('trucada_season', key);
+  if (!prev || prev === key) return;
+  const before = store.trophies;
+  store.trophies = Math.max(store.floor, Math.round(before * 0.75));
+  store.crowns = 0;
+  store.passClaimed = [];
+  seasonResetInfo = { before, after: store.trophies };
+})();
+
+switchTab('battle');
+if (seasonResetInfo) {
+  openDialog(`
+    <h2>🌅 Nova temporada!</h2>
+    <p>Seus troféus foram ajustados de <b>${seasonResetInfo.before}</b> para <b>${seasonResetInfo.after} 🏆</b> (75%, respeitando o piso da arena) e o passe recomeçou.</p>
+    <div class="btns"><button class="gold" id="dOk">Bora!</button></div>`);
+  $('dOk').onclick = () => { closeDialog(); showStreakDialog(); };
+} else {
+  showStreakDialog();
+}
+</script>
