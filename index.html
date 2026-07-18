@@ -410,9 +410,8 @@
     padding-bottom: 10px;
   }
   .tab-screen[hidden] { display: none; }
-  /* home: conteúdo ancorado no topo; folga sobra embaixo, como na referência */
-  #screenBattle > :last-child { margin-bottom: auto; }
-  #screenBattle { gap: 12px; }
+  /* home: NUNCA rola — o diorama é elástico e absorve a folga/aperto */
+  #screenBattle { gap: 10px; overflow: hidden; }
   .screen-title {
     font-family: var(--disp);
     font-size: 26px;
@@ -893,6 +892,8 @@
     position: relative;
     width: 100%;
     max-width: 400px;
+    flex: 1 1 auto;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -926,10 +927,20 @@
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, .55);
     text-shadow: 0 1.5px 0 rgba(0, 0, 0, .5);
   }
-  .as-bar { height: 8px; margin-top: 0; max-width: 190px; }
-  .as-diorama { width: 100%; margin-top: -4px; }
-  .as-diorama img {
+  .as-bar { height: 8px; margin-top: 0; max-width: 190px; flex-shrink: 0; }
+  .as-diorama {
     width: 100%;
+    flex: 1 1 auto;
+    min-height: 0;
+    margin-top: -4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .as-diorama img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
     height: auto;
     display: block;
     -webkit-mask-image: radial-gradient(ellipse 94% 90% at 50% 46%, #000 58%, transparent 99%);
@@ -1010,6 +1021,27 @@
     .mc-title { font-size: 34px; }
     .mc-sub { font-size: 10px; white-space: normal; }
     .mode-card { min-height: 140px; }
+  }
+  /* telas baixas: compacta os blocos fixos para caber sem scroll */
+  @media (max-height: 760px) {
+    #screenBattle { gap: 8px; }
+    .as-title { font-size: 31px; }
+    .as-pill { font-size: 14px; padding: 4px 16px; }
+    .mode-card { min-height: 138px; gap: 4px; }
+    .mc-title { font-size: 38px; }
+    .mc-art { width: 52px; }
+    .shortcut { min-height: 54px; font-size: 25px; }
+    .pc-crown { font-size: 25px; }
+    .nav-btn { font-size: 23px; padding: 8px 2px 6px; }
+    .nav-btn.active { font-size: 27px; padding: 10px 2px 8px; }
+  }
+  @media (max-height: 620px) {
+    .mc-desc { display: none; }
+    .mode-card { min-height: 104px; }
+    .mc-title { font-size: 30px; }
+    .mc-art { width: 42px; }
+    .as-title { font-size: 24px; }
+    .as-bar { display: none; }
   }
 
   /* placas do restante do menu no tom quase-preto da referência */
