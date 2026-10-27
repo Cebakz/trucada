@@ -1,1 +1,0 @@
-:root{--bg: #060407;--felt: #0f5132;--gold: #f5c542;--text: #f4efe6}*{box-sizing:border-box}html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:system-ui,sans-serif}#app{height:100dvh;display:grid;place-items:center}.splash h1{margin:0;font-size:48px;letter-spacing:4px;color:var(--gold)}.splash p{text-align:center;opacity:.7}
